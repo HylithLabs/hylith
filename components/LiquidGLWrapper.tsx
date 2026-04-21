@@ -88,22 +88,19 @@ export default function LiquidGLWrapper({
         className="liquidGL relative inline-flex items-center rounded-full"
         ref={glassRef}
         style={{
-            padding:"10px",
+          padding: "10px",
           boxShadow: `
-      0 0 8px rgba(0,0,0,0.03),
-      0 2px 6px rgba(0,0,0,0.08),
-      inset 3px 3px 0.5px -3.5px rgba(0,0,0,0.09),
-      inset -3px -3px 0.5px -3.5px rgba(0,0,0,0.85),
-      inset 1px 1px 1px -0.5px rgba(0,0,0,0.6),
-      inset -1px -1px 1px -0.5px rgba(0,0,0,0.6),
-      inset 0 0 6px 6px rgba(0,0,0,0.12),
-      inset 0 0 2px 2px rgba(0,0,0,0.06),
-      0 0 12px rgba(255,255,255,0.15)
-    `,
-          background: "rgba(0,0,0,0.04)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          border: "1px solid rgba(0,0,0,0.1)",
+    0 4px 16px rgba(0,0,0,0.12),
+    0 1px 4px rgba(0,0,0,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.95),
+    inset 0 -2px 4px rgba(0,0,0,0.08),
+    inset 2px 0 4px rgba(255,255,255,0.7),
+    inset -2px 0 4px rgba(0,0,0,0.04)
+  `,
+          background: "rgba(255,255,255,0.75)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.9)",
         }}
       >
         {children}
