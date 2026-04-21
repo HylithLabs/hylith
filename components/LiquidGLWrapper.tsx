@@ -90,17 +90,18 @@ export default function LiquidGLWrapper({
         style={{
           padding: "10px",
           boxShadow: `
-    0 4px 16px rgba(0,0,0,0.12),
-    0 1px 4px rgba(0,0,0,0.08),
-    inset 0 2px 4px rgba(255,255,255,0.95),
-    inset 0 -2px 4px rgba(0,0,0,0.08),
-    inset 2px 0 4px rgba(255,255,255,0.7),
-    inset -2px 0 4px rgba(0,0,0,0.04)
-  `,
-          background: "rgba(255,255,255,0.75)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.9)",
+          0 4px 16px rgba(0,0,0,0.12),
+          0 1px 4px rgba(0,0,0,0.08),
+          inset 0 2px 4px rgba(255,255,255,0.35),
+          inset 0 -2px 4px rgba(0,0,0,0.06),
+          inset 2px 0 4px rgba(255,255,255,0.2),
+          inset -2px 0 4px rgba(0,0,0,0.03)
+        `,
+        background: "rgba(255,255,255,0.18)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        border: "1.5px solid rgba(255,255,255,0.6)",
+        borderBottom: "1.5px solid rgba(255,255,255,0.25)",
         }}
       >
         {children}
