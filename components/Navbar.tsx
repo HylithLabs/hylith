@@ -11,21 +11,21 @@ const Navbar = () => {
 
       <LiquidGLWrapper
         options={{
-          refraction: 0.015,
+          refraction: 0.012,
           frost: 0,
-          tilt: false, // tilt looks odd on navbars
-          shadow: false,
+          tilt: false,
+          shadow: true,
           specular: true,
-          bevelDepth: 0.011,
-          bevelWidth: 0.354,
+          bevelDepth: 0.006,
+          bevelWidth: 0.02,
         }}
       >
         <div className="flex gap-8 font-dm-sans px-8">
-          <Link href="#">Home</Link>
-          <Link href="#">Services</Link>
-          <Link href="#">Works</Link>
-          <Link href="#">Team</Link>
-          <Link href="#">Reviews</Link>
+          <Link className="cursor-pointer" href="#">Home</Link>
+          <Link className="cursor-pointer" href="#">Services</Link>
+          <Link className="cursor-pointer" href="#">Works</Link>
+          <Link className="cursor-pointer" href="#">Team</Link>
+          <Link className="cursor-pointer" href="#">Reviews</Link>
         </div>
       </LiquidGLWrapper>
     </nav>

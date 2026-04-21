@@ -53,13 +53,12 @@ export default function LiquidGLWrapper({
       snapshot: "body",
       target: ".liquidGL",
       resolution: 2.0,
-      refraction: 0.01,
-      bevelDepth: 0.19,
-      bevelWidth: 0.126,
+      refraction: 0.012,
+      bevelDepth: 0.006,
+      bevelWidth: 0.02,
       frost: 0,
       shadow: true,
       specular: true,
-      //   reveal: "fade",
       tilt: false,
       tiltFactor: 5,
       magnify: 1,
@@ -90,18 +89,17 @@ export default function LiquidGLWrapper({
         style={{
           padding: "10px",
           boxShadow: `
-          0 4px 16px rgba(0,0,0,0.12),
-          0 1px 4px rgba(0,0,0,0.08),
-          inset 0 2px 4px rgba(255,255,255,0.35),
-          inset 0 -2px 4px rgba(0,0,0,0.06),
-          inset 2px 0 4px rgba(255,255,255,0.2),
-          inset -2px 0 4px rgba(0,0,0,0.03)
+          0 10px 60px 8px rgba(0,0,0,0.5),
+          0 4px 30px 4px rgba(0,0,0,0.35),
+          0 0 100px 30px rgba(0,0,0,0.18),
+          inset 0 1px 1px rgba(255,255,255,0.08),
+          inset 0 -1px 1px rgba(0,0,0,0.12)
         `,
-        background: "rgba(255,255,255,0.18)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        border: "1.5px solid rgba(255,255,255,0.6)",
-        borderBottom: "1.5px solid rgba(255,255,255,0.25)",
+        background: "rgba(255,255,255,0.04)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: "0.5px solid rgba(255,255,255,0.18)",
+        borderBottom: "0.5px solid rgba(255,255,255,0.08)",
         }}
       >
         {children}
