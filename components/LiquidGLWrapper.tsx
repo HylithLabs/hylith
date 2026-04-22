@@ -1,7 +1,7 @@
 // components/LiquidGLWrapper.tsx
 "use client";
 
-import { useRef } from "react";
+import { useRef, ElementType, useId } from "react";
 import Script from "next/script";
 
 interface LiquidGLInstance {
@@ -34,30 +34,35 @@ declare global {
   }
 }
 
-interface LiquidGLWrapperProps {
+interface LiquidGLWrapperProps extends React.HTMLAttributes<HTMLElement> {
   children?: React.ReactNode;
   options?: LiquidGLOptions;
+  as?: ElementType;
 }
 
 export default function LiquidGLWrapper({
   children,
   options = {},
+  as: Component = "div",
+  ...props
 }: LiquidGLWrapperProps) {
-  const glassRef = useRef<HTMLDivElement>(null);
+  const glassRef = useRef<any>(null);
   const instanceRef = useRef<LiquidGLInstance | null>(null);
+  const uniqueId = useId().replace(/:/g, "");
+  const targetClass = `liquidGL-${uniqueId}`;
 
   const initLiquidGL = () => {
     if (typeof window === "undefined" || !window.liquidGL) return;
 
     instanceRef.current = window.liquidGL({
       snapshot: "body",
-      target: ".liquidGL",
+      target: `.${targetClass}`,
       resolution: 2.0,
-      refraction: 0.012,
-      bevelDepth: 0.006,
-      bevelWidth: 0.02,
+      refraction: 0.036,
+      bevelDepth: 0,
+      bevelWidth: 0.04,
       frost: 0,
-      shadow: true,
+      shadow: false,
       specular: true,
       tilt: false,
       tiltFactor: 5,
@@ -75,7 +80,7 @@ export default function LiquidGLWrapper({
   return (
     <>
       <Script
-        src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        src="/scripts/html2canvas.min.js"
         strategy="beforeInteractive"
       />
       <Script
@@ -83,15 +88,15 @@ export default function LiquidGLWrapper({
         strategy="afterInteractive"
         onLoad={initLiquidGL}
       />
-      <div
-        className="liquidGL relative inline-flex items-center rounded-full"
+      <Component
+        className={`liquidGL ${targetClass} relative inline-flex items-center rounded-full ${props.className || ""}`}
         ref={glassRef}
         style={{
           padding: "10px",
           boxShadow: `
-          0 10px 60px 8px rgba(0,0,0,0.5),
-          0 4px 30px 4px rgba(0,0,0,0.35),
-          0 0 100px 30px rgba(0,0,0,0.18),
+          0 10px 60px 8px rgba(0, 0, 0, 0.03),
+          0 4px 30px 4px rgba(0, 0, 0, 0.03),
+          0 0 100px 30px rgba(0, 0, 0, 0.04),
           inset 0 1px 1px rgba(255,255,255,0.08),
           inset 0 -1px 1px rgba(0,0,0,0.12)
         `,
@@ -100,10 +105,12 @@ export default function LiquidGLWrapper({
         WebkitBackdropFilter: "blur(16px)",
         border: "0.5px solid rgba(255,255,255,0.18)",
         borderBottom: "0.5px solid rgba(255,255,255,0.08)",
+        ...props.style,
         }}
+        {...props}
       >
         {children}
-      </div>
+      </Component>
     </>
   );
 }

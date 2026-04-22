@@ -1,13 +1,8 @@
 @import "tailwindcss";
-
+@import 'lenis/dist/lenis.css';
 :root {
   --background: #efefed;
   --foreground: #0f0b0a;
-}
-
-/* remove manual font-family here */
-.font-dm-sans {
-  font-family: var(--font-dm-sans), sans-serif;
 }
 
 @theme inline {
@@ -16,32 +11,48 @@
   --font-sans: var(--font-dm-sans);
 }
 
+html {
+  font-family: var(--font-dm-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-optical-sizing: auto;
+}
+
 body {
   background: var(--background);
-  /* background-image: url('https://plus.unsplash.com/premium_photo-1697730147256-f9e736f77ec1?q=80&w=1170&auto=format&fit=crop');
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center; */
-
   color: var(--foreground);
+}
 
-  /* THIS is what actually applies the font */
+/* Optional utility (only if you explicitly need it) */
+.font-dm-sans {
   font-family: var(--font-dm-sans), sans-serif;
 }
 
+/* liquidGL styles */
 .liquidGL {
   z-index: 50;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
-  
 }
 
-.liquidGL .content {
+.liquidGL .nav {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  /* padding: 12px 32px; */
+  gap: 32px;
+  pointer-events: auto;
+}
+
+.liquidGL .button {
   position: relative;
   z-index: 3;
   display: flex;
   align-items: center;
   padding: 12px 32px;
   gap: 32px;
+  pointer-events: auto;
 }
+
+ 

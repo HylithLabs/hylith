@@ -446,9 +446,15 @@
               .flatMap((lens) => [lens.el, lens._shadowEl])
               .filter(Boolean);
   
+            lensElements.forEach(el => {
+              const oldOp = el.style.opacity;
+              el.style.opacity = '0';
+              undos.push(() => el.style.opacity = oldOp);
+            });
+  
             const ignoreElementsFunc = (element) => {
               if (!element || !element.hasAttribute) return false;
-              if (element === this.canvas || lensElements.includes(element)) {
+              if (element === this.canvas) {
                 return true;
               }
               const style = window.getComputedStyle(element);
