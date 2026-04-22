@@ -3,7 +3,7 @@ import HomePage from "./home-page";
 import { absoluteUrl, siteConfig } from "./site-config";
 
 export const metadata: Metadata = {
-  title: "Full-Stack Systems for Modern Brands",
+  title: siteConfig.title,
   description: siteConfig.description,
   alternates: {
     canonical: "/",
