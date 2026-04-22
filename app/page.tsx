@@ -30,6 +30,7 @@ const jsonLd = {
       url: siteConfig.url,
       description: siteConfig.description,
       logo: absoluteUrl("/assets/logo.svg"),
+      brand: siteConfig.name,
     },
     {
       "@type": "WebSite",
@@ -41,6 +42,11 @@ const jsonLd = {
         "@id": absoluteUrl("/#organization"),
       },
       inLanguage: "en-US",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteConfig.url}/?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
     },
     {
       "@type": "WebPage",
@@ -53,6 +59,9 @@ const jsonLd = {
       },
       about: {
         "@id": absoluteUrl("/#organization"),
+      },
+      primaryImageOfPage: {
+        "@id": absoluteUrl("/opengraph-image"),
       },
     },
   ],

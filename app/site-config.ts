@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Hylith",
   legalName: "Hylith",
   url: "https://hylith.com",
-  title: "Hylith || Modern By Design, Trusted By Purpose",
+  title: "Hylith | Modern By Design, Trusted By Purpose",
   description:
     "Hylith designs and builds full-stack systems where logic and interface work as one.",
   ogDescription:
