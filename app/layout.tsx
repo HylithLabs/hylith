@@ -1,48 +1,67 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 import Script from "next/script";
-import { DM_Sans } from "next/font/google";
+import { absoluteUrl, siteConfig } from "./site-config";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
+const dmSans = localFont({
+  src: "../public/fonts/dm-sans.woff2",
   variable: "--font-dm-sans",
   display: "swap",
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Hylith | Modern By Design Trusted By Purpose",
-    template: "%s • Hylith",
+    default: siteConfig.title,
+    template: "%s | Hylith",
   },
-  description:
-    "We design and build full-stack systems where logic and interface work as one.",
-  metadataBase: new URL("https://hylith.com"),
-
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  keywords: [...siteConfig.keywords],
+  authors: [{ name: siteConfig.legalName, url: siteConfig.url }],
+  creator: siteConfig.legalName,
+  publisher: siteConfig.legalName,
+  alternates: {
+    canonical: "/",
+  },
+  category: "technology",
   openGraph: {
-    title: "Hylith",
-    description:
-      "We design and build full-stack systems where logic and interface work as one.",
-    url: "https://hylith.com",
-    siteName: "Hylith",
+    title: siteConfig.title,
+    description: siteConfig.ogDescription,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
     images: [
       {
-        url: "/og.png",
+        url: absoluteUrl("/opengraph-image"),
         width: 1200,
         height: 630,
+        alt: `${siteConfig.name} brand preview`,
       },
     ],
-    locale: "en_US",
+    locale: siteConfig.locale,
     type: "website",
   },
-
   twitter: {
     card: "summary_large_image",
-    title: "Hylith",
-    description:
-      "We design and build full-stack systems where logic and interface work as one.",
-    images: ["/og.png"],
+    title: siteConfig.title,
+    description: siteConfig.ogDescription,
+    images: [absoluteUrl("/twitter-image")],
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
 
+export const viewport: Viewport = {
   themeColor: "#000000",
 };
 
@@ -61,10 +80,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
 
-        <Script
-          src="/scripts/liquidGL.js"
-          strategy="afterInteractive"
-        />
+        <Script src="/scripts/liquidGL.js" strategy="afterInteractive" />
       </body>
     </html>
   );

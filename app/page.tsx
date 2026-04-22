@@ -1,41 +1,73 @@
-"use client";
-import Navbar from "@/components/Navbar";
-import Lenis from "lenis";
-import { useEffect } from "react";
-import HeroSection from "@/pages/HeroSection";
-import Second from "@/pages/Second";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import type { Metadata } from "next";
+import HomePage from "./home-page";
+import { absoluteUrl, siteConfig } from "./site-config";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+export const metadata: Metadata = {
+  title: "Full-Stack Systems for Modern Brands",
+  description: siteConfig.description,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: siteConfig.title,
+    description: siteConfig.ogDescription,
+    url: siteConfig.url,
+  },
+  twitter: {
+    title: siteConfig.title,
+    description: siteConfig.ogDescription,
+  },
+};
 
-export default function Home() {
-  useEffect(() => {
-    const lenis = new Lenis({
-      lerp: 0.1,
-    });
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": absoluteUrl("/#organization"),
+      name: siteConfig.name,
+      legalName: siteConfig.legalName,
+      url: siteConfig.url,
+      description: siteConfig.description,
+      logo: absoluteUrl("/assets/logo.svg"),
+    },
+    {
+      "@type": "WebSite",
+      "@id": absoluteUrl("/#website"),
+      url: siteConfig.url,
+      name: siteConfig.name,
+      description: siteConfig.description,
+      publisher: {
+        "@id": absoluteUrl("/#organization"),
+      },
+      inLanguage: "en-US",
+    },
+    {
+      "@type": "WebPage",
+      "@id": absoluteUrl("/#webpage"),
+      url: siteConfig.url,
+      name: siteConfig.title,
+      description: siteConfig.description,
+      isPartOf: {
+        "@id": absoluteUrl("/#website"),
+      },
+      about: {
+        "@id": absoluteUrl("/#organization"),
+      },
+    },
+  ],
+};
 
-    // GSAP <-> Lenis sync
-    lenis.on("scroll", ScrollTrigger.update);
-
-    const raf = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0);
-
-    return () => {
-      gsap.ticker.remove(raf);
-      lenis.destroy();
-    };
-  }, []);
-
+export default function Page() {
   return (
-    <main>
-      <Navbar />
-      <HeroSection />
-      <Second />
-    </main>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+      <HomePage />
+    </>
   );
 }

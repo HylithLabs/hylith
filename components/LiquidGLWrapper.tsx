@@ -46,7 +46,7 @@ export default function LiquidGLWrapper({
   as: Component = "div",
   ...props
 }: LiquidGLWrapperProps) {
-  const glassRef = useRef<any>(null);
+  const glassRef = useRef<HTMLElement | null>(null);
   const instanceRef = useRef<LiquidGLInstance | null>(null);
   const uniqueId = useId().replace(/:/g, "");
   const targetClass = `liquidGL-${uniqueId}`;
@@ -81,7 +81,7 @@ export default function LiquidGLWrapper({
     <>
       <Script
         src="/scripts/html2canvas.min.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
       <Script
         src="/scripts/liquidGL.js"

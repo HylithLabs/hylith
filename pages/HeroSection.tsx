@@ -1,15 +1,14 @@
-import React from 'react'
+import React from "react";
 
 const HeroSection = () => {
   return (
-    <section className="hero section" id='home'>
-        <div className="mt-24">
-          <h1 className="text-9xl tracking-[-0.05em] font-medium text-center mr-72">
-            WE COMPLETE
-          </h1>
-          <div className="flex items-center justify-center gap-2 mx-auto">
+    <section className="hero section" id="home">
+      <div className="mt-24">
+        <h1 className="text-9xl tracking-[-0.05em] font-medium text-center">
+          <span className="block mr-72">WE COMPLETE</span>
+          <span className="flex items-center justify-center gap-2 mx-auto">
             <button
-              className="px-10 text-sm cursor-pointer font-semibold h-18   rounded-full relative"
+              className="px-10 text-sm cursor-pointer font-semibold h-18 rounded-full relative"
               style={{
                 background: "rgba(255, 255, 255, 0.4)",
                 backdropFilter: "blur(16px)",
@@ -26,21 +25,20 @@ const HeroSection = () => {
             >
               Discuss Your System
             </button>
-            <h1 className="text-9xl tracking-[-0.05em] font-medium   w-fit">
-              YOUR BUSINESS
-            </h1>
-          </div>
-        </div>
-        <div className=''>
-          <p className="capitalize font-medium text-3xl text-center ml-96 text-[#666666] tracking-[-0.05em]">
-            We design and build full-stack systems
-          </p>
-          <p className="capitalize font-medium text-3xl text-center ml-96 text-[#666666] tracking-[-0.05em]">
-            where logic and interface work as one.
-          </p>
-        </div>
-      </section>
-  )
-}
+            <span className="w-fit">YOUR BUSINESS</span>
+          </span>
+        </h1>
+      </div>
+      <div>
+        <p className="capitalize font-medium text-3xl text-center ml-96 text-[#666666] tracking-[-0.05em]">
+          We design and build full-stack systems
+        </p>
+        <p className="capitalize font-medium text-3xl text-center ml-96 text-[#666666] tracking-[-0.05em]">
+          where logic and interface work as one.
+        </p>
+      </div>
+    </section>
+  );
+};
 
-export default HeroSection
+export default HeroSection;
