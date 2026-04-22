@@ -14,7 +14,6 @@ export default function Home() {
   useEffect(() => {
     const lenis = new Lenis({
       lerp: 0.1,
-      smooth: true,
     });
 
     // GSAP <-> Lenis sync

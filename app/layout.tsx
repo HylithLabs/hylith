@@ -11,7 +11,7 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Hylith",
+    default: "Hylith | Modern By Design Trusted By Purpose",
     template: "%s • Hylith",
   },
   description:
