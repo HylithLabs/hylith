@@ -4,8 +4,8 @@ const HeroSection = () => {
   return (
     <section className="hero section" id="home">
       <div className="mt-24">
-        <h1 className="text-9xl tracking-[-0.05em] font-medium text-center">
-          <span className="block mr-72">WE COMPLETE</span>
+        <h1 className="text-9xl  font-medium text-center">
+          <span className="block mr-72 tracking-[-0.03em]">WE COMPLETE</span>
           <span className="flex items-center justify-center gap-4 mx-auto">
             <span
               className="inline-flex items-center  px-10 py-3 cursor-pointer font-semibold rounded-full"
@@ -29,7 +29,7 @@ const HeroSection = () => {
             >
               Discuss Your System
             </span>
-            <span>YOUR BUSINESS</span>
+            <span className="tracking-[-0.05em]">YOUR BUSINESS</span>
           </span>
         </h1>
       </div>
