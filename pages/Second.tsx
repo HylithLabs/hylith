@@ -87,8 +87,8 @@ const Second = () => {
             </div>
           </div>
           <div className="w-full flex justify-between items-end h-1/4">
-            <span className=" cursor-pointer w-30 h-6 border-b-2 flex items-center justify-between ">Our Work  <HiArrowLongRight size={28}/></span>
-            <span className=" cursor-pointer w-30 h-6 border-b-2 flex items-center justify-between ">Discuss <HiArrowLongRight size={28}/> </span>
+            <span className=" cursor-pointer w-30 h-6 border-b-2 border-[#0F0B0A] font-medium flex items-center justify-between ">Our Work  <HiArrowLongRight size={28}/></span>
+            <span className=" cursor-pointer w-30 h-6 border-b-2 border-[#0F0B0A] font-medium flex items-center justify-between ">Discuss <HiArrowLongRight size={28}/> </span>
           </div>
         </div>
       </div>

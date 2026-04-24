@@ -18,7 +18,9 @@ export const TextReveal: FC<TextRevealProps> = ({ children, className }) => {
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const { scrollYProgress } = useScroll({
     target: sectionRef,
+    offset: ["start 30%", "end 100%"],
   })
+  
 
   if (typeof children !== "string") {
     throw new Error("TextReveal: children must be a string")
