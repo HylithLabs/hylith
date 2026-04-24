@@ -1,7 +1,7 @@
 // components/LiquidGLWrapper.tsx
 "use client";
 
-import { useRef, ElementType, useId } from "react";
+import { createElement, ElementType, useId, useRef } from "react";
 import Script from "next/script";
 
 interface LiquidGLInstance {
@@ -88,29 +88,31 @@ export default function LiquidGLWrapper({
         strategy="afterInteractive"
         onLoad={initLiquidGL}
       />
-      <Component
-        className={`liquidGL ${targetClass} relative inline-flex items-center rounded-full ${props.className || ""}`}
-        ref={glassRef}
-        style={{
-          padding: "10px",
-          boxShadow: `
+      {createElement(
+        Component,
+        {
+          ...props,
+          className: `liquidGL ${targetClass} relative inline-flex items-center rounded-full ${props.className || ""}`,
+          ref: glassRef,
+          style: {
+            padding: "10px",
+            boxShadow: `
           0 10px 60px 8px rgba(0, 0, 0, 0.03),
           0 4px 30px 4px rgba(0, 0, 0, 0.03),
           0 0 100px 30px rgba(0, 0, 0, 0.04),
           inset 0 1px 1px rgba(255,255,255,0.08),
           inset 0 -1px 1px rgba(0,0,0,0.12)
         `,
-        background: "rgba(255,255,255,0.04)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        border: "0.5px solid rgba(255,255,255,0.18)",
-        borderBottom: "0.5px solid rgba(255,255,255,0.08)",
-        ...props.style,
-        }}
-        {...props}
-      >
-        {children}
-      </Component>
+            background: "rgba(255,255,255,0.04)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: "0.5px solid rgba(255,255,255,0.18)",
+            borderBottom: "0.5px solid rgba(255,255,255,0.08)",
+            ...props.style,
+          },
+        },
+        children
+      )}
     </>
   );
 }

@@ -10,6 +10,7 @@ import HeroSection from "@/pages/HeroSection";
 import Second from "@/pages/Second";
 import Third from "@/pages/Third";
 import Forth from "@/pages/Forth";
+import Fifth from "@/pages/Fifth";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -41,6 +42,7 @@ export default function HomePage() {
       <Second />
       <Third/>
       <Forth/>
+      <Fifth/>
     </main>
   );
 }
