@@ -3,6 +3,10 @@ import localFont from "next/font/local";
 import Script from "next/script";
 import { absoluteUrl, siteConfig } from "./site-config";
 import "./globals.css";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const dmSans = localFont({
   src: "../public/fonts/dm-sans.woff2",
@@ -71,8 +75,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={dmSans.variable}>
-      <body className="bg-black text-white min-h-screen antialiased">
+    <html lang="en" className={cn("font-sans", geist.variable, dmSans.variable)}>
+      <body className="min-h-screen antialiased">
         {children}
 
         <Script

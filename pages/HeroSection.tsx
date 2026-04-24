@@ -33,7 +33,7 @@ const HeroSection = () => {
           </span>
         </h1>
       </div>
-      <div>
+      <div className="pb-20">
         <p className="capitalize font-medium text-3xl text-center ml-96 text-[#666666] tracking-[-0.05em]">
           We design and build full-stack systems
         </p>

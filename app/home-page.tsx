@@ -8,6 +8,7 @@ import { useGSAP } from "@gsap/react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/pages/HeroSection";
 import Second from "@/pages/Second";
+import Third from "@/pages/Third";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -37,6 +38,7 @@ export default function HomePage() {
       <Navbar />
       <HeroSection />
       <Second />
+      <Third/>
     </main>
   );
 }

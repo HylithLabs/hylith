@@ -15,30 +15,54 @@ const Second = () => {
     // Set initial state BEFORE animation to prevent jump
     gsap.set(".second-section", {
       scale: 0.9,
-      borderRadius: "38px",
-      marginTop: "5rem",
+      borderRadius: "40px", 
     });
 
     gsap.to(".second-section", {
-      scale: 1,
-      marginTop: "0rem",
+      scale: 1, 
       borderRadius: 0,
       backgroundColor: "#EFEFED",
-      ease: "easeOut",
+      ease: "none",
+      
       scrollTrigger: {
         trigger: ".second-wrapper",
         start: "top 75%", // starts the moment wrapper enters viewport
         end: "top top", // finishes when wrapper reaches top
-        scrub: true,
-        // markers: true,        // smooth velocity-based scrub
+        scrub: 1,        // smooth velocity-based scrub
       },
     });
-  });
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".second-wrapper",
+        start: "top top",
+        end: "+=200%", // total scroll distance while pinned (adjust as needed)
+        scrub: true, 
+        pin: true,
+      },
+    });
+
+    // Hold at full scale
+    tl.to(".second-section", {
+      scale: 1,
+      duration: 2, // Holds for proportionally "2s" of scroll
+      ease: "none",
+    });
+
+    // Then reverse animation to starting state
+    tl.to(".second-section", {
+      scale: 0.9, 
+      borderRadius: "40px",
+      backgroundColor: "#0F0B0A",
+      duration: 1,
+      ease: "none",
+    });
+  }); 
 
   return (
     <section className="second-wrapper">
       <div className="second-section  h-screen flex p-10 bg-[#0F0B0A]">
-        <div className="h-full w-[60vw] ">
+        <div className="h-full w-[55vw] ">
           <div className="w-full h-2/3 flex items-center ">
             <Image
               src={"/assets/temp.png"}
@@ -53,7 +77,7 @@ const Second = () => {
             <h2>lives beyond trends</h2>
           </div>
         </div>
-        <div className="h-full w-[40vw]  ">
+        <div className="h-full w-[45vw]  ">
 
           <div className="w-full h-3/4 ">
             <div className="w-full flex flex-col uppercase py-8 font-bold text-8xl">
