@@ -25,7 +25,14 @@ const data = [
   },
 ];
 
-const reviews = [
+type Review = {
+  name: string;
+  username: string;
+  text: string;
+  gradient: string;
+};
+
+const reviews: Review[] = [
   {
     name: "Fatima Rahman",
     username: "@fatimarahman · Founder, PadmaPay",
@@ -80,16 +87,16 @@ const reviews = [
    REVIEW CARD
 ========================= */
 
-const ReviewCard = ({ review }: any) => {
+const ReviewCard = ({ review }: { review: Review }) => {
   return (
-    <div className="w-[280px] md:w-[320px] p-5 rounded-2xl bg-white/60 backdrop-blur-xl border border-black/5 shadow-sm hover:scale-[1.03] transition-transform duration-300">
+    <div className="w-[min(17.5rem,calc(100vw-3rem))] rounded-2xl border border-black/5 bg-white/60 p-5 shadow-sm backdrop-blur-xl transition-transform duration-300 hover:scale-[1.03] md:w-[320px]">
       <div className="flex items-center gap-3 mb-3">
         <div
-          className={`w-10 h-10 rounded-full bg-gradient-to-br ${review.gradient}`}
+          className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-br ${review.gradient}`}
         />
-        <div>
-          <p className="text-sm font-medium text-black">{review.name}</p>
-          <p className="text-xs text-black/50">{review.username}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-medium break-words text-black">{review.name}</p>
+          <p className="text-xs break-words text-black/50">{review.username}</p>
         </div>
       </div>
 
@@ -110,10 +117,10 @@ const Forth = () => {
   return (
     <section
       id="what-we-do"
-      className="w-full min-h-screen flex flex-col justify-center items-center px-6 py-30 gap-16 bg-[#EFEFED]"
+      className="flex min-h-screen w-full flex-col items-center justify-center gap-10 bg-[#EFEFED] px-4 py-20 sm:gap-16 sm:px-6 sm:py-24 xl:py-30"
     >
       {/* ================= Accordion ================= */}
-      <div className="w-full max-w-7xl rounded-3xl bg-[#F8F8F6] shadow-sm border border-black/5 p-8 md:p-10">
+      <div className="w-full max-w-7xl rounded-2xl border border-black/5 bg-[#F8F8F6] p-5 shadow-sm sm:rounded-3xl sm:p-8 md:p-10">
         {data.map((item, index) => {
           const isOpen = active === item.id;
 
@@ -121,22 +128,22 @@ const Forth = () => {
             <div key={item.id}>
               <div
                 onClick={() => setActive(isOpen ? null : item.id)}
-                className="flex items-start justify-between gap-4 cursor-pointer py-6"
+                className="flex cursor-pointer items-start justify-between gap-3 py-6 sm:gap-4"
               >
-                <div className="flex gap-6">
-                  <span className="text-sm text-black/40 mt-1">
+                <div className="flex min-w-0 gap-4 sm:gap-6">
+                  <span className="mt-1 shrink-0 text-sm text-black/40">
                     {item.id}
                   </span>
 
-                  <div>
-                    <h2 className="text-2xl md:text-3xl font-semibold text-black">
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-semibold break-words text-black sm:text-2xl md:text-3xl">
                       {item.title}
                     </h2>
 
                     <div
                       className={cn(
                         "transition-all duration-500 overflow-hidden",
-                        isOpen ? "max-h-60 mt-4" : "max-h-0"
+                        isOpen ? "mt-4 max-h-96 sm:max-h-80 md:max-h-60" : "max-h-0"
                       )}
                     >
                       <p className="text-black/60 max-w-xl text-sm md:text-base leading-relaxed">
@@ -172,7 +179,7 @@ const Forth = () => {
                       inset 0 -2px 4px 0px rgba(0, 0, 0, 0.05)
                     `,
                   }}
-                  className="w-9 h-9 flex items-center justify-center text-[#666] font-semibold rounded-full"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-semibold text-[#666]"
                 >
                   {isOpen ? "−" : "+"}
                 </div>
@@ -187,10 +194,10 @@ const Forth = () => {
       </div>
 
       {/* ================= Marquee Reviews ================= */}
-      <div className="w-full max-w-7xl relative overflow-hidden space-y-1 ">
+      <div className="relative w-full max-w-7xl space-y-1 overflow-hidden">
         {/* Fade edges */}
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-linear-to-r from-[#EFEFED] to-transparent z-10" />
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-linear-to-l from-[#EFEFED] to-transparent z-10" />
+        <div className="pointer-events-none absolute top-0 left-0 z-10 h-full w-10 bg-linear-to-r from-[#EFEFED] to-transparent sm:w-16 md:w-24" />
+        <div className="pointer-events-none absolute top-0 right-0 z-10 h-full w-10 bg-linear-to-l from-[#EFEFED] to-transparent sm:w-16 md:w-24" />
 
         {/* Row 1 */}
         <Marquee pauseOnHover className="[--duration:25s]">

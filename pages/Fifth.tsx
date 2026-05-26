@@ -58,12 +58,12 @@ function ValueColumn({ items, title }: { items: string[]; title: string }) {
   const secondGroup = items.slice(splitIndex);
 
   return (
-    <div className="py-10">
+    <div className="py-8 md:py-10">
       <p className="text-2xl font-medium tracking-[-0.03em] text-[#0F0B0A]">
         {title}
       </p>
 
-      <div className="mt-5 grid grid-cols-2 tracking-[-0.03em] font-medium gap-x-6 gap-y-2 text-xl leading-6 text-[#0F0B0A]/58 md:gap-x-10">
+      <div className="mt-5 grid grid-cols-1 gap-x-6 gap-y-2 text-lg leading-6 font-medium tracking-[-0.03em] break-words text-[#0F0B0A]/58 sm:grid-cols-2 sm:text-xl md:gap-x-10">
         <ul className="space-y-1">
           {firstGroup.map((item) => (
             <li key={item}>{item}</li>
@@ -140,7 +140,7 @@ const Fifth = () => {
       ref={sectionRef}
       className="relative overflow-hidden bg-[#EFEFED] text-[#0F0B0A]"
     >
-      <div className="mx-auto flex w-full max-w-[1340px] flex-col px-6 pb-6  md:px-8  lg:px-10">
+      <div className="mx-auto flex w-full max-w-[1340px] flex-col px-4 pb-6 sm:px-6 md:px-8 lg:px-10">
         <div className="w-full">
           <h2 className="w-full text-[clamp(2.35rem,5vw,5.1rem)] leading-[0.98] tracking-[-0.01em]">
             Above All, We Believe In Human Relationships, Exceptional Outcomes,
@@ -153,14 +153,15 @@ const Fifth = () => {
           <ValueColumn items={WHAT_WE_DONT} title="What We Don't" />
         </div>
 
-        <button className="mt-12 inline-flex w-fit cursor-pointer  flex-col items-start  text-left text-[1rem] font-medium tracking-[-0.04em] md:text-[1.2rem]">
-          <span className="inline-flex items-center text-4xl gap-2">
+        <button className="mt-10 inline-flex max-w-full w-fit cursor-pointer flex-col items-start text-left text-[1rem] font-medium tracking-[-0.04em] md:mt-12 md:text-[1.2rem]">
+          <span className="inline-flex max-w-full flex-wrap items-center gap-2 text-3xl leading-tight sm:text-4xl">
             Let&apos;s Make
-            <ArrowRight className="size-10  md:size-10" />
+            <ArrowRight className="size-8 shrink-0 sm:size-10 md:size-10" />
           </span>
-          <span className="flex items-center text-4xl gap-2">
+          <span className="flex max-w-full flex-wrap items-center gap-2 text-3xl leading-tight sm:text-4xl">
             Something{" "}
             <WordRotate
+              className="max-w-full break-words"
               words={[
                 "Click",
                 "Epic",
@@ -186,7 +187,7 @@ const Fifth = () => {
 
           <footer
             ref={footerRef}
-            className="rounded-[26px] bg-[#0F0B0A] px-6 py-6 text-[#EFEFED] opacity-0 shadow-[0_24px_70px_rgba(15,11,10,0.22)] md:px-8 md:py-7"
+            className="rounded-[18px] bg-[#0F0B0A] px-5 py-5 text-[#EFEFED] opacity-0 shadow-[0_24px_70px_rgba(15,11,10,0.22)] sm:rounded-[26px] sm:px-6 sm:py-6 md:px-8 md:py-7"
           >
             <div className="flex min-h-[8.5rem] flex-col justify-between gap-8 md:flex-row md:items-end">
               <div className="flex items-start">
@@ -201,7 +202,7 @@ const Fifth = () => {
               </div>
 
               <div className="flex flex-col items-start gap-4 md:items-end">
-                <div className="flex items-center gap-3 text-[#EFEFED]/72">
+                <div className="flex flex-wrap items-center justify-start gap-x-3 gap-y-2 text-[#EFEFED]/72 md:justify-end">
                   {SOCIALS.map(({ href, icon: Icon, label }) => (
                     <a
                       key={label}
@@ -215,7 +216,7 @@ const Fifth = () => {
                     </a>
                   ))}
                   <a
-                    className="ml-3 text-[0.76rem] tracking-[0.02em] text-[#EFEFED]/58"
+                    className="break-all text-[0.76rem] tracking-[0.02em] text-[#EFEFED]/58 md:ml-3"
                     href="mailto:hello@hylith.com"
                   >
                     hello@hylith.com

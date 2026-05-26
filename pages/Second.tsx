@@ -88,7 +88,7 @@ const EXPANDED = {
 } as const;
 
 const PIN_SCROLL_DISTANCE = "+=200%";
-const DESKTOP_MQ = "(min-width: 1025px)";
+const DESKTOP_MQ = "(min-width: 1280px)";
 
 function TeamAvatarCollage({ onImageLoad }: { onImageLoad: () => void }) {
   const collageRef = useRef<HTMLDivElement>(null);
@@ -145,30 +145,34 @@ function TeamAvatarCollage({ onImageLoad }: { onImageLoad: () => void }) {
   return (
     <div
       ref={collageRef}
-      className="relative shrink-0 overflow-visible mt-[-30] ml-20"
-      style={{ width: COLLAGE_WIDTH, height: COLLAGE_HEIGHT }}
+      className="team-avatar-collage relative shrink-0 overflow-visible"
     >
-      {AVATAR_TILES.map((tile, index) => (
-        <div
-          key={`avatar-${index}`}
-          className="avatar-tile absolute overflow-hidden will-change-transform"
-          style={{
-            left: tile.left,
-            top: tile.top,
-            width: TILE_SIZE,
-            height: TILE_SIZE,
-          }}
-        >
-          <Image
-            src={tile.src}
-            alt={tile.alt}
-            width={116}
-            height={116}
-            className="size-full object-cover"
-            onLoad={onImageLoad}
-          />
-        </div>
-      ))}
+      <div
+        className="team-avatar-collage__inner relative"
+        style={{ width: COLLAGE_WIDTH, height: COLLAGE_HEIGHT }}
+      >
+        {AVATAR_TILES.map((tile, index) => (
+          <div
+            key={`avatar-${index}`}
+            className="avatar-tile absolute overflow-hidden will-change-transform"
+            style={{
+              left: tile.left,
+              top: tile.top,
+              width: TILE_SIZE,
+              height: TILE_SIZE,
+            }}
+          >
+            <Image
+              src={tile.src}
+              alt={tile.alt}
+              width={116}
+              height={116}
+              className="size-full object-cover"
+              onLoad={onImageLoad}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -270,7 +274,7 @@ const Second = () => {
         };
       });
 
-      mm.add("(max-width: 1024px)", () => {
+      mm.add("(max-width: 1279px)", () => {
         gsap.set(section, EXPANDED);
         gsap.set(".second-copy", { color: "#0F0B0A" });
         gsap.set(".second-link", { borderColor: "#0F0B0A" });
@@ -287,15 +291,15 @@ const Second = () => {
     <section ref={wrapperRef} className="second-wrapper overflow-hidden">
       <div
         ref={sectionRef}
-        className="second-section relative min-h-screen w-full bg-[#F2F2F2] px-8 py-12 sm:px-12 sm:py-14 lg:grid lg:min-h-screen lg:grid-cols-2 lg:items-stretch lg:gap-x-16 lg:px-20 lg:py-20 xl:gap-x-28 xl:px-28 xl:py-24"
+        className="second-section relative min-h-screen w-full bg-[#F2F2F2] px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16 xl:grid xl:min-h-screen xl:grid-cols-2 xl:items-stretch xl:gap-x-28 xl:px-28 xl:py-24"
       >
         {/* Left column */}
-        <div className="flex flex-col justify-between gap-24 lg:min-h-[calc(100vh-9rem)] lg:gap-0">
-          <div className="lg:pt-4 xl:pt-8">
+        <div className="flex min-w-0 flex-col justify-between gap-14 sm:gap-20 xl:min-h-[calc(100vh-9rem)] xl:gap-0">
+          <div className="xl:pt-8">
             <TeamAvatarCollage onImageLoad={refreshScroll} />
           </div>
 
-          <div className="second-copy mt-8 flex max-w-lg text-nowrap text-6xl font-regular flex-col leading-[0.8] tracking-[-0.03em] lg:mt-auto lg:max-w-xl lg:pb-6 xl:max-w-2xl xl:pb-10">
+          <div className="second-copy mt-8 flex max-w-full flex-col text-3xl leading-[0.9] font-regular tracking-[-0.03em] sm:text-4xl sm:leading-[0.86] md:text-5xl xl:mt-auto xl:max-w-2xl xl:text-6xl xl:leading-[0.8] xl:text-nowrap xl:pb-10">
             <h2 >
               Beautiful form that
             </h2>
@@ -309,15 +313,15 @@ const Second = () => {
         </div>
 
         {/* Right column — headline top-right, links bottom */}
-        <div className="mt-16 flex flex-col justify-between gap-20 lg:mt-0 lg:min-h-[calc(100vh-9rem)] lg:gap-0">
-          <div className="second-copy flex w-full flex-col items-end text-right uppercase font-black leading-[0.88] tracking-[-0.03em] lg:pt-6 xl:pt-10">
+        <div className="mt-14 flex min-w-0 flex-col justify-between gap-16 sm:mt-16 sm:gap-20 xl:mt-0 xl:min-h-[calc(100vh-9rem)] xl:gap-0">
+          <div className="second-copy flex w-full flex-col items-end text-right leading-[0.88] font-black tracking-[-0.03em] uppercase xl:pt-10">
             <h2 className="text-[clamp(2.35rem,5.4vw,5.75rem)]">Together,</h2>
             <h2 className="text-[clamp(2.35rem,5.4vw,5.75rem)]">we create</h2>
             <h2 className="text-[clamp(2.35rem,5.4vw,5.75rem)]">solutions</h2>
           </div>
 
           {/* Mobile links */}
-          <div className="mt-6 flex w-full items-end justify-between gap-12 pb-2 sm:justify-end sm:gap-20 lg:hidden">
+          <div className="mt-6 flex w-full flex-wrap items-end justify-between gap-x-8 gap-y-5 pb-2 sm:justify-end sm:gap-x-20 xl:hidden">
             <a
               href="#work"
               className="second-link second-copy flex h-7 min-w-30 cursor-pointer items-center justify-between gap-3 border-b-2 border-[#0F0B0A] text-[0.95rem] font-medium"
@@ -336,7 +340,7 @@ const Second = () => {
         </div>
 
         {/* Desktop: Our Work ~center, Discuss far right */}
-        <div className="pointer-events-none absolute inset-x-20 bottom-16 hidden lg:block xl:inset-x-28 xl:bottom-20">
+        <div className="pointer-events-none absolute inset-x-28 bottom-20 hidden xl:block">
           <a
             href="#work"
             className="second-link second-copy pointer-events-auto absolute bottom-0 left-[56%] flex h-7 min-w-30 -translate-x-1/2 cursor-pointer items-center justify-between gap-4 border-b-2 border-[#0F0B0A] text-[0.95rem] font-medium"

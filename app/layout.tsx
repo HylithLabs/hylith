@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import Script from "next/script";
 import { absoluteUrl, siteConfig } from "./site-config";
 import "./globals.css";
 import { Geist } from "next/font/google";
@@ -65,8 +64,11 @@ export const metadata: Metadata = {
   },
 };
 
+/* Responsive viewport: ensures proper mobile rendering with device-width */
 export const viewport: Viewport = {
   themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

@@ -1,18 +1,45 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useRef } from "react";
 
 const HeroSection = () => {
+  const badgeRef = useRef<HTMLSpanElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const descRef = useRef<HTMLDivElement>(null);
+
+  /* Subtle stagger-in on mount for a modern feel */
+  useEffect(() => {
+    const els = [badgeRef.current, headingRef.current, descRef.current];
+    els.forEach((el, i) => {
+      if (!el) return;
+      el.style.opacity = "0";
+      el.style.transform = "translateY(28px)";
+      el.style.transition = `opacity 0.7s cubic-bezier(.16,1,.3,1) ${0.15 + i * 0.12}s, transform 0.7s cubic-bezier(.16,1,.3,1) ${0.15 + i * 0.12}s`;
+      requestAnimationFrame(() => {
+        el.style.opacity = "1";
+        el.style.transform = "translateY(0)";
+      });
+    });
+  }, []);
+
   return (
-    <section className="hero section" id="home">
-      <div className="mt-24">
-        <h1 className="text-9xl  font-medium text-center">
-          <span className="block mr-72 tracking-[-0.03em]">WE COMPLETE</span>
-          <span className="flex items-center justify-center gap-4 mx-auto">
+    <section
+      className="hero section overflow-hidden px-4 sm:px-6 xl:px-0"
+      id="home"
+    >
+      <div className="mt-12 sm:mt-16 lg:mt-20 xl:mt-24">
+        <h1
+          ref={headingRef}
+          className="text-center text-[clamp(2.9rem,14vw,5.6rem)] leading-[0.92] font-medium sm:text-[clamp(4.8rem,12vw,7rem)] lg:text-[6.8rem] xl:text-9xl xl:leading-none"
+        >
+          <span className="block tracking-[-0.03em] lg:mr-24 xl:mr-72">
+            WE COMPLETE
+          </span>
+          <span className="mx-auto flex flex-col items-center justify-center gap-3 sm:gap-4 lg:flex-row">
             <span
-              className="inline-flex items-center  px-10 py-3 cursor-pointer font-semibold rounded-full"
+              ref={badgeRef}
+              className="hero-badge inline-flex h-11 max-w-full cursor-pointer items-center rounded-full px-5 text-sm font-semibold leading-none whitespace-nowrap sm:h-12 sm:px-7 sm:text-[1rem] xl:h-16 xl:px-10 xl:text-[1.09rem]"
               style={{
-                fontSize: "1.09rem",
-                lineHeight: "1",
-                height: "4rem",
                 letterSpacing: "0",
                 background: "rgba(255, 255, 255, 0.4)",
                 backdropFilter: "blur(16px)",
@@ -33,11 +60,13 @@ const HeroSection = () => {
           </span>
         </h1>
       </div>
-      <div className="pb-20">
-        <p className="capitalize font-medium text-3xl text-center ml-96 text-[#666666] tracking-[-0.05em]">
+      <div ref={descRef} className="pb-16 sm:pb-20">
+        {/* Responsive: on mobile, text stacks naturally with smaller font.
+            On large screens, maintains the original left-offset layout. */}
+        <p className="mx-auto max-w-[36rem] text-center text-lg font-medium tracking-[-0.03em] text-[#666666] capitalize sm:text-2xl sm:tracking-[-0.05em] lg:ml-40 lg:max-w-none xl:ml-96 xl:text-3xl">
           We design and build full-stack systems
         </p>
-        <p className="capitalize font-medium text-3xl text-center ml-96 text-[#666666] tracking-[-0.05em]">
+        <p className="mx-auto max-w-[36rem] text-center text-lg font-medium tracking-[-0.03em] text-[#666666] capitalize sm:text-2xl sm:tracking-[-0.05em] lg:ml-40 lg:max-w-none xl:ml-96 xl:text-3xl">
           where logic and interface work as one.
         </p>
       </div>
