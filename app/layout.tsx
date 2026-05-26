@@ -4,7 +4,7 @@ import Script from "next/script";
 import { absoluteUrl, siteConfig } from "./site-config";
 import "./globals.css";
 import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"; 
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -76,15 +76,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable, dmSans.variable)}>
-      <body className="min-h-screen antialiased">
-        {children}
+      <body className="min-h-screen bg-[#EEEEE8] antialiased"> 
+          {children} 
+         
 
-        <Script
+        {/* <Script
           src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
           strategy="beforeInteractive"
-        />
+        /> */}
 
-        <Script src="/scripts/liquidGL.js" strategy="afterInteractive" />
+        {/* <Script src="/scripts/liquidGL.js" strategy="afterInteractive" /> */}
       </body>
     </html>
   );
