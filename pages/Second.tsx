@@ -39,6 +39,7 @@ const FLOAT_OFFSETS = [
 const TEAM_AVATAR_SOURCES = [
   "/assets/JotirmoyCartoon.png",
   "/assets/RaiyanCartoon.png",
+  "/assets/nahinCartoon.png",
 ] as const;
 
 const TILE_SIZE = 109;
@@ -53,9 +54,12 @@ const CENTER_LEFT = (RIGHT_COL + TILE_SIZE) / 2 - TILE_SIZE / 2;
 const ROW2_TOP = TILE_SIZE + TILE_GAP_Y;
 const ROW3_TOP = (TILE_SIZE + TILE_GAP_Y) * 2;
 
-/** Five staggered positions — edit `left` / `top` per tile, or tweak SKEW_SPREAD. */
+/**
+ * Five staggered positions — each row picks an image from TEAM_AVATAR_SOURCES.
+ * Adding a file to that array alone is not enough; assign it to a slot here.
+ */
 const AVATAR_TILES = [
-  { src: TEAM_AVATAR_SOURCES[0], alt: "Jotirmoy", left: -SKEW_SPREAD, top: 0 },
+  { src: TEAM_AVATAR_SOURCES[2], alt: "Nahin", left: -SKEW_SPREAD, top: 0 },
   { src: TEAM_AVATAR_SOURCES[1], alt: "Raiyan", left: RIGHT_COL, top: 0 },
   {
     src: TEAM_AVATAR_SOURCES[0],
@@ -65,8 +69,8 @@ const AVATAR_TILES = [
   },
   { src: TEAM_AVATAR_SOURCES[1], alt: "Raiyan", left: 0, top: ROW3_TOP },
   {
-    src: TEAM_AVATAR_SOURCES[0],
-    alt: "Jotirmoy",
+    src: TEAM_AVATAR_SOURCES[2],
+    alt: "Nahin",
     left: RIGHT_COL + SKEW_SPREAD,
     top: ROW3_TOP,
   },
@@ -84,7 +88,7 @@ const COLLAPSED = {
 const EXPANDED = {
   scale: 1,
   borderRadius: 0,
-  backgroundColor: "#F2F2F2",
+  backgroundColor: "#EEEEE8",
 } as const;
 
 const PIN_SCROLL_DISTANCE = "+=200%";
@@ -196,8 +200,8 @@ const Second = () => {
           ...COLLAPSED,
           transformOrigin: "center center",
         });
-        gsap.set(".second-copy", { color: "#F2F2F2" });
-        gsap.set(".second-link", { borderColor: "#F2F2F2" });
+        gsap.set(".second-copy", { color: "#EEEEE8" });
+        gsap.set(".second-link", { borderColor: "#EEEEE8" });
 
         const approach = gsap.to(section, {
           ...EXPANDED,
@@ -257,12 +261,12 @@ const Second = () => {
           })
           .to(
             ".second-copy",
-            { color: "#F2F2F2", ease: "none", duration: 1 },
+            { color: "#EEEEE8", ease: "none", duration: 1 },
             "<",
           )
           .to(
             ".second-link",
-            { borderColor: "#F2F2F2", ease: "none", duration: 1 },
+            { borderColor: "#EEEEE8", ease: "none", duration: 1 },
             "<",
           );
 
@@ -291,7 +295,7 @@ const Second = () => {
     <section ref={wrapperRef} className="second-wrapper overflow-hidden">
       <div
         ref={sectionRef}
-        className="second-section relative min-h-screen w-full bg-[#F2F2F2] px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16 xl:grid xl:min-h-screen xl:grid-cols-2 xl:items-stretch xl:gap-x-28 xl:px-28 xl:py-24"
+        className="second-section relative min-h-screen w-full bg-[#EEEEE8] px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16 xl:grid xl:min-h-screen xl:grid-cols-2 xl:items-stretch xl:gap-x-28 xl:px-28 xl:py-24"
       >
         {/* Left column */}
         <div className="flex min-w-0 flex-col justify-between gap-14 sm:gap-20 xl:min-h-[calc(100vh-9rem)] xl:gap-0">
