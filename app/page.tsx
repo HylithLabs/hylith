@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import HomePage from "./home-page";
-import { absoluteUrl, siteConfig } from "./site-config";
+import { absoluteUrl, ogImageMetadata, ogImageUrl, siteConfig } from "./site-config";
 
 export const metadata: Metadata = {
   title: siteConfig.title,
@@ -12,10 +12,13 @@ export const metadata: Metadata = {
     title: siteConfig.title,
     description: siteConfig.ogDescription,
     url: siteConfig.url,
+    images: [ogImageMetadata],
   },
   twitter: {
+    card: "summary_large_image",
     title: siteConfig.title,
     description: siteConfig.ogDescription,
+    images: [ogImageUrl()],
   },
 };
 
@@ -62,7 +65,7 @@ const jsonLd = {
       },
       primaryImageOfPage: {
         "@type": "ImageObject",
-        url: absoluteUrl(siteConfig.ogImagePath),
+        url: ogImageUrl(),
       },
     },
   ],

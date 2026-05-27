@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { absoluteUrl, siteConfig } from "./site-config";
+import { ogImageMetadata, ogImageUrl, siteConfig } from "./site-config";
 import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils"; 
@@ -34,15 +34,7 @@ export const metadata: Metadata = {
     description: siteConfig.ogDescription,
     url: siteConfig.url,
     siteName: siteConfig.name,
-    images: [
-      {
-        url: absoluteUrl(siteConfig.ogImagePath),
-        width: 1200,
-        height: 630,
-        alt: `${siteConfig.name} brand preview`,
-        type: "image/png",
-      },
-    ],
+    images: [ogImageMetadata],
     locale: siteConfig.locale,
     type: "website",
   },
@@ -50,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.title,
     description: siteConfig.ogDescription,
-    images: [absoluteUrl(siteConfig.ogImagePath)],
+    images: [ogImageUrl()],
   },
   robots: {
     index: true,

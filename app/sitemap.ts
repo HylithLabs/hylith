@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { absoluteUrl, siteConfig } from "./site-config";
+import { absoluteUrl, ogImageUrl } from "./site-config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "weekly",
       priority: 1,
-      images: [absoluteUrl(siteConfig.ogImagePath)],
+      images: [ogImageUrl()],
     },
   ];
 }
