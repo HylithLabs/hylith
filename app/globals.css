@@ -493,3 +493,66 @@ html.is-global-loading #__next {
     max-width: min(84vw, 26rem);
   }
 }
+
+/* ── Mobile Hero Card & Collage Styles ── */
+.hero-mobile-card {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-collage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 84px);
+  grid-template-rows: repeat(3, 84px);
+  gap: 16px;
+  width: fit-content;
+  justify-content: center;
+}
+
+@media (max-width: 380px) {
+  .hero-collage-grid {
+    grid-template-columns: repeat(3, 72px);
+    grid-template-rows: repeat(3, 72px);
+    gap: 12px;
+  }
+}
+
+.hero-collage-tile {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Float animation for mobile collage tiles to make it feel alive! */
+.hero-collage-tile:nth-child(1) { animation: heroDrift1 12s ease-in-out infinite; }
+.hero-collage-tile:nth-child(2) { animation: heroDrift2 14s ease-in-out infinite; }
+.hero-collage-tile:nth-child(3) { animation: heroDrift3 16s ease-in-out infinite; }
+.hero-collage-tile:nth-child(4) { animation: heroDrift4 13s ease-in-out infinite; }
+.hero-collage-tile:nth-child(5) { animation: heroDrift5 15s ease-in-out infinite; }
+
+@keyframes heroDrift1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(3px, -3px); }
+}
+@keyframes heroDrift2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-3px, 3px); }
+}
+@keyframes heroDrift3 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(2px, 2px); }
+}
+@keyframes heroDrift4 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-3px, -2px); }
+}
+@keyframes heroDrift5 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(3px, 3px); }
+}

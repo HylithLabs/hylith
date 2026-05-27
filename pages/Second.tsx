@@ -299,7 +299,7 @@ const Second = () => {
       >
         {/* Left column */}
         <div className="flex min-w-0 flex-col justify-between gap-14 sm:gap-20 xl:min-h-[calc(100vh-9rem)] xl:gap-0">
-          <div className="xl:pt-8">
+          <div className="hidden xl:block xl:pt-8">
             <TeamAvatarCollage onImageLoad={refreshScroll} />
           </div>
 
