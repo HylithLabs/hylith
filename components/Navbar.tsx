@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type MouseEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { scrollToAnchor, scrollToTop } from "@/lib/smooth-scroll-anchor";
 
 const NAV_LINKS = [
-  { label: "Home", href: "#" },
-  { label: "Services", href: "#" },
-  { label: "Works", href: "#" },
-  { label: "Team", href: "#" },
-  { label: "Reviews", href: "#" },
+  { label: "Home", href: "/" },
+  { label: "Services", href: "#what-we-do" },
+  { label: "Works", href: "#what-we-do" },
+  { label: "Team", href: "#team" },
+  { label: "Reviews", href: "#reviews" },
 ];
 
 /** Shared glass style for both desktop pill and mobile menu */
@@ -29,6 +31,7 @@ const GLASS_STYLE = {
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   /* Lock body scroll when mobile menu is open */
   useEffect(() => {
@@ -54,6 +57,24 @@ const Navbar = () => {
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
+  const handleNavClick = useCallback(
+    (href: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+      if (href.startsWith("#")) {
+        event.preventDefault();
+        scrollToAnchor(href);
+        closeMenu();
+        return;
+      }
+
+      if (href === "/" && pathname === "/") {
+        event.preventDefault();
+        scrollToTop();
+        closeMenu();
+      }
+    },
+    [closeMenu, pathname],
+  );
+
   return (
     <>
       <nav className="top-0 left-0 z-50 flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-4 px-4 py-4 sm:px-8 sm:py-5 lg:flex-nowrap lg:px-12 xl:px-18 xl:py-6">
@@ -76,6 +97,7 @@ const Navbar = () => {
               key={link.label}
               className="cursor-pointer font-medium transition hover:opacity-70"
               href={link.href}
+              onClick={handleNavClick(link.href)}
             >
               {link.label}
             </Link>
@@ -129,7 +151,7 @@ const Navbar = () => {
             <Link
               key={link.label}
               href={link.href}
-              onClick={closeMenu}
+              onClick={handleNavClick(link.href)}
               className="text-3xl font-semibold tracking-[-0.02em] text-[#0F0B0A] transition-all duration-300 hover:opacity-60 sm:text-4xl"
               style={{
                 transform: menuOpen

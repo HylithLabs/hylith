@@ -194,7 +194,7 @@ const Forth = () => {
       </div>
 
       {/* ================= Marquee Reviews ================= */}
-      <div className="relative w-full max-w-7xl space-y-1 overflow-hidden">
+      <div id="reviews" className="relative w-full max-w-7xl space-y-1 overflow-hidden">
         {/* Fade edges */}
         <div className="pointer-events-none absolute top-0 left-0 z-10 h-full w-10 bg-linear-to-r from-[#EFEFED] to-transparent sm:w-16 md:w-24" />
         <div className="pointer-events-none absolute top-0 right-0 z-10 h-full w-10 bg-linear-to-l from-[#EFEFED] to-transparent sm:w-16 md:w-24" />

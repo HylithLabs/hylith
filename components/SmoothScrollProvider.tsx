@@ -4,6 +4,11 @@ import { useEffect } from "react";
 import gsap from "gsap";
 import Lenis from "lenis";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  registerLenis,
+  scrollToAnchor,
+  unregisterLenis,
+} from "@/lib/smooth-scroll-anchor";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,6 +18,8 @@ export default function SmoothScrollProvider() {
       lerp: 0.1,
       smoothWheel: true,
     });
+
+    registerLenis(lenis);
 
     const root = document.documentElement;
 
@@ -53,10 +60,35 @@ export default function SmoothScrollProvider() {
     window.addEventListener("resize", refreshScrollTriggers);
     window.addEventListener("load", refreshScrollTriggers, { once: true });
 
+    const onAnchorClick = (event: MouseEvent) => {
+      const anchor = (event.target as Element | null)?.closest(
+        'a[href^="#"]',
+      );
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+
+      const hash = anchor.getAttribute("href");
+      if (!hash || hash === "#") return;
+
+      if (!scrollToAnchor(hash)) return;
+
+      event.preventDefault();
+    };
+
+    document.addEventListener("click", onAnchorClick, true);
+
+    const scrollInitialHash = () => {
+      const { hash } = window.location;
+      if (hash) scrollToAnchor(hash);
+    };
+
+    requestAnimationFrame(scrollInitialHash);
+
     return () => {
       window.removeEventListener("resize", refreshScrollTriggers);
+      document.removeEventListener("click", onAnchorClick, true);
       ScrollTrigger.scrollerProxy(root, {});
       gsap.ticker.remove(rafCallback);
+      unregisterLenis();
       lenis.destroy();
     };
   }, []);

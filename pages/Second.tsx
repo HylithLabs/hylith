@@ -148,6 +148,7 @@ function TeamAvatarCollage({ onImageLoad }: { onImageLoad: () => void }) {
 
   return (
     <div
+    id="team"
       ref={collageRef}
       className="team-avatar-collage relative shrink-0 overflow-visible"
     >
