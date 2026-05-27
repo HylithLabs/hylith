@@ -61,7 +61,8 @@ const jsonLd = {
         "@id": absoluteUrl("/#organization"),
       },
       primaryImageOfPage: {
-        "@id": absoluteUrl("/opengraph-image"),
+        "@type": "ImageObject",
+        url: absoluteUrl(siteConfig.ogImagePath),
       },
     },
   ],

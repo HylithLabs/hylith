@@ -7,6 +7,8 @@ export const siteConfig = {
     "Hylith designs and builds full-stack systems where logic and interface work as one.",
   ogDescription:
     "Modern product, engineering, and full-stack system design for ambitious businesses.",
+  /** Social preview image in /public (Open Graph, Twitter, JSON-LD). */
+  ogImagePath: "/assets/OGImage.png",
   locale: "en_US",
   keywords: [
     "Hylith",

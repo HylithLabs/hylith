@@ -36,10 +36,11 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: absoluteUrl("/opengraph-image"),
+        url: absoluteUrl(siteConfig.ogImagePath),
         width: 1200,
         height: 630,
         alt: `${siteConfig.name} brand preview`,
+        type: "image/png",
       },
     ],
     locale: siteConfig.locale,
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.title,
     description: siteConfig.ogDescription,
-    images: [absoluteUrl("/twitter-image")],
+    images: [absoluteUrl(siteConfig.ogImagePath)],
   },
   robots: {
     index: true,
