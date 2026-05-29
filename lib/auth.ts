@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import clientPromise, { getMongoClient } from "@/lib/mongodb";
 import { authConfig } from "@/lib/auth.config";
+import { isAdminEmail } from "@/lib/admin";
+import { ensureAdminUser } from "@/lib/admin-server";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -28,6 +30,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(raw) {
+        await ensureAdminUser();
+
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
 
@@ -52,6 +56,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user._id.toString(),
           email: user.email,
           name: user.name ?? user.email.split("@")[0],
+          role: isAdminEmail(user.email) ? "admin" : "user",
         };
       },
     }),

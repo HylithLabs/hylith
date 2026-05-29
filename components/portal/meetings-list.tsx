@@ -15,7 +15,7 @@ export type MeetingItem = {
   _id: string;
   startAt: string;
   timezone: string;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "cancelled" | "closed";
   projectSummary: string;
 };
 
@@ -23,6 +23,8 @@ function statusVariant(status: MeetingItem["status"]) {
   switch (status) {
     case "confirmed":
       return "default" as const;
+    case "closed":
+      return "secondary" as const;
     case "cancelled":
       return "secondary" as const;
     default:

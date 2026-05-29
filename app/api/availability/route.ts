@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { addDays, startOfDay } from "date-fns";
 import { auth } from "@/lib/auth";
 import { connectMongoose } from "@/lib/mongoose";
 import { Meeting } from "@/models/meeting";
 import {
   getAgencyTimezone,
-  getBookableDaysInRange,
-  getSlotsForDay,
+  getBookableDateKeysInRange,
+  getSlotsForDayByKey,
 } from "@/lib/availability";
 
 export async function GET(request: Request) {
@@ -27,8 +26,7 @@ export async function GET(request: Request) {
   const timezone = getAgencyTimezone();
 
   if (dateParam) {
-    const day = startOfDay(new Date(dateParam));
-    const slots = getSlotsForDay(day, bookedStarts);
+    const slots = await getSlotsForDayByKey(dateParam, bookedStarts);
     return NextResponse.json({
       timezone,
       date: dateParam,
@@ -36,12 +34,10 @@ export async function GET(request: Request) {
     });
   }
 
-  const from = startOfDay(new Date());
-  const to = addDays(from, 60);
-  const days = getBookableDaysInRange(from, to, bookedStarts);
+  const bookableDays = await getBookableDateKeysInRange(bookedStarts, 60);
 
   return NextResponse.json({
     timezone,
-    bookableDays: days.map((d) => d.toISOString().slice(0, 10)),
+    bookableDays,
   });
 }

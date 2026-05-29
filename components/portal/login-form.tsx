@@ -23,21 +23,28 @@ export function LoginForm() {
     setError(null);
     setLoading(true);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    setLoading(false);
+      setLoading(false);
 
-    if (result?.error) {
-      setError("Invalid email or password");
-      return;
+      if (result?.error) {
+        setError("Invalid email or password");
+        return;
+      }
+
+      router.push(callbackUrl);
+      router.refresh();
+    } catch (err) {
+      setLoading(false);
+      const message = err instanceof Error ? err.message : "An error occurred during login";
+      setError(message);
+      console.error("Login error:", err);
     }
-
-    router.push(callbackUrl);
-    router.refresh();
   }
 
   return (

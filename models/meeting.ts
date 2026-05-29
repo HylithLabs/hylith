@@ -10,12 +10,12 @@ const meetingSchema = new Schema(
     durationMinutes: { type: Number, default: 30 },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
+      enum: ["pending", "confirmed", "cancelled", "closed"],
       default: "pending",
     },
     projectSummary: { type: String, required: true },
-    company: { type: String },
-    phone: { type: String },
+    company: { type: String, required: true },
+    phone: { type: String, required: true },
   },
   { timestamps: true },
 );

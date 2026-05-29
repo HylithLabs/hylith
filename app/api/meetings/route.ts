@@ -12,11 +12,11 @@ import { sendMeetingEmails } from "@/lib/email";
 const createSchema = z.object({
   startAt: z.string().datetime(),
   projectSummary: z.string().min(10).max(2000),
-  company: z.string().max(200).optional(),
-  phone: z.string().max(40).optional(),
+  company: z.string().trim().min(1, "Company is required").max(200),
+  phone: z.string().trim().min(5, "Phone number is required").max(40),
 });
 
-const MAX_PENDING = 3;
+const MAX_PENDING = 1;
 
 export async function GET() {
   const session = await auth();
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     });
     if (pendingCount >= MAX_PENDING) {
       return NextResponse.json(
-        { error: "You already have 3 pending requests. We'll be in touch soon." },
+        { error: "You already have a pending meeting. Wait until it is closed before scheduling another." },
         { status: 429 },
       );
     }
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     }).select("startAt");
     const bookedStarts = booked.map((m) => m.startAt);
 
-    if (!isValidBookableSlot(startAt, bookedStarts)) {
+    if (!(await isValidBookableSlot(startAt, bookedStarts))) {
       return NextResponse.json(
         { error: "This time slot is no longer available" },
         { status: 409 },

@@ -1,4 +1,4 @@
-import { formatDateLabel, formatSlotLabel } from "@/lib/availability";
+import { formatDateLabel, formatSlotLabel } from "@/lib/availability-utils";
 import { getMailFrom, getSmtpTransporter } from "@/lib/mail";
 
 function getAgencyEmail() {
@@ -40,7 +40,7 @@ export async function sendMeetingEmails(params: {
     .filter(Boolean)
     .join("\n");
 
-  await Promise.all([
+  const results = await Promise.allSettled([
     transporter.sendMail({
       from,
       to: getAgencyEmail(),
@@ -56,5 +56,10 @@ export async function sendMeetingEmails(params: {
     }),
   ]);
 
-  return { skipped: false };
+  const failed = results.filter((r) => r.status === "rejected");
+  if (failed.length > 0) {
+    console.error("Email sending errors:", failed.map((f) => (f as PromiseRejectedResult).reason));
+  }
+
+  return { skipped: false, partialFailure: failed.length > 0 };
 }

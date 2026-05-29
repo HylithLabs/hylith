@@ -14,6 +14,11 @@ export async function DELETE(
 
   const { id } = await context.params;
 
+  // Validate MongoDB ObjectId format
+  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    return NextResponse.json({ error: "Invalid meeting ID" }, { status: 400 });
+  }
+
   try {
     await connectMongoose();
     const meeting = await Meeting.findOne({

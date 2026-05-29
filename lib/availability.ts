@@ -1,100 +1,119 @@
+import { addDays, addHours, format, isBefore } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { connectMongoose } from "./mongoose";
+import { AvailabilitySettings } from "@/models/availability-settings";
 import {
-  addDays,
-  addMinutes,
-  format,
-  isBefore,
-  isWeekend,
-  setHours,
-  setMinutes,
-  startOfDay,
-} from "date-fns";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
+  AGENCY_TIMEZONE,
+  ALL_SLOT_TIME_LABELS,
+  SLOT_DURATION_MINUTES,
+} from "./availability-constants";
+import {
+  formatSlotDateKey,
+  getFutureDateKeys,
+  todayDateKey,
+} from "./availability-utils";
 
-const SLOT_MINUTES = 30;
-const WORK_START_HOUR = 10;
-const WORK_END_HOUR = 18;
+export {
+  AGENCY_TIMEZONE,
+  SLOT_DURATION_MINUTES,
+  ALL_SLOT_TIME_LABELS,
+} from "./availability-constants";
+export { getFutureDateKeys, todayDateKey } from "./availability-utils";
+
 const MIN_LEAD_HOURS = 24;
 
-function getTimezone() {
-  return process.env.AGENCY_TIMEZONE ?? "Asia/Kolkata";
-}
-
-export function getSlotDurationMinutes() {
-  return SLOT_MINUTES;
-}
-
-export function formatSlotLabel(date: Date, timezone: string) {
-  return format(toZonedTime(date, timezone), "h:mm a");
-}
-
-export function formatDateLabel(date: Date, timezone: string) {
-  return format(toZonedTime(date, timezone), "EEEE, MMMM d, yyyy");
-}
-
-/** Returns UTC Date instances for bookable slots on the given calendar day (agency TZ). */
-export function getSlotsForDay(day: Date, bookedStarts: Date[] = []): Date[] {
-  const timezone = getTimezone();
-  const zonedDay = toZonedTime(day, timezone);
-  const dayStart = startOfDay(zonedDay);
-
-  if (isWeekend(dayStart)) {
-    return [];
+export async function getSettings() {
+  await connectMongoose();
+  let settings = await AvailabilitySettings.findOne();
+  if (!settings) {
+    settings = await AvailabilitySettings.create({
+      timezone: AGENCY_TIMEZONE,
+      availableSlots: [],
+    });
   }
-
-  const nowUtc = new Date();
-  const minStart = addHoursUtc(nowUtc, MIN_LEAD_HOURS);
-  const slots: Date[] = [];
-
-  for (let hour = WORK_START_HOUR; hour < WORK_END_HOUR; hour++) {
-    for (let minute = 0; minute < 60; minute += SLOT_MINUTES) {
-      const local = setMinutes(setHours(dayStart, hour), minute);
-      const utc = fromZonedTime(local, timezone);
-
-      if (isBefore(utc, minStart)) continue;
-
-      const isBooked = bookedStarts.some(
-        (b) => Math.abs(b.getTime() - utc.getTime()) < 60_000,
-      );
-      if (!isBooked) {
-        slots.push(utc);
-      }
-    }
-  }
-
-  return slots;
-}
-
-function addHoursUtc(date: Date, hours: number) {
-  return addMinutes(date, hours * 60);
-}
-
-/** Days in range that have at least one available slot. */
-export function getBookableDaysInRange(
-  from: Date,
-  to: Date,
-  bookedStarts: Date[] = [],
-): Date[] {
-  const days: Date[] = [];
-  let cursor = startOfDay(from);
-
-  while (cursor <= to) {
-    const slots = getSlotsForDay(cursor, bookedStarts);
-    if (slots.length > 0) {
-      days.push(new Date(cursor));
-    }
-    cursor = addDays(cursor, 1);
-  }
-
-  return days;
-}
-
-export function isValidBookableSlot(startAt: Date, bookedStarts: Date[] = []) {
-  const timezone = getTimezone();
-  const zoned = toZonedTime(startAt, timezone);
-  const daySlots = getSlotsForDay(zoned, bookedStarts);
-  return daySlots.some((s) => Math.abs(s.getTime() - startAt.getTime()) < 60_000);
+  return settings;
 }
 
 export function getAgencyTimezone() {
-  return getTimezone();
+  return AGENCY_TIMEZONE;
+}
+
+export async function getSlotDurationMinutes() {
+  const settings = await getSettings();
+  return settings.slotDurationMinutes ?? SLOT_DURATION_MINUTES;
+}
+
+/** All 30-min slots for a calendar day (Asia/Dhaka). */
+export function generateCandidateSlotsForDay(dateKey: string): Date[] {
+  return ALL_SLOT_TIME_LABELS.map((time) =>
+    fromZonedTime(`${dateKey}T${time}:00`, AGENCY_TIMEZONE),
+  );
+}
+
+function sameSlot(a: Date, b: Date) {
+  return Math.abs(a.getTime() - b.getTime()) < 60_000;
+}
+
+function toDateArray(slots: unknown): Date[] {
+  if (!Array.isArray(slots)) return [];
+  return slots.map((s) => new Date(s as string | Date));
+}
+
+function slotsForDateKey(
+  availableSlots: Date[],
+  dateKey: string,
+  bookedStarts: Date[],
+): Date[] {
+  const nowUtc = new Date();
+  const minStart = addHours(nowUtc, MIN_LEAD_HOURS);
+
+  return availableSlots.filter((slot) => {
+    if (formatSlotDateKey(slot) !== dateKey) return false;
+    if (isBefore(slot, minStart)) return false;
+    if (bookedStarts.some((b) => sameSlot(b, slot))) return false;
+    return true;
+  });
+}
+
+/** Bookable slots on a specific yyyy-MM-dd day (Asia/Dhaka). */
+export async function getSlotsForDayByKey(
+  dateKey: string,
+  bookedStarts: Date[] = [],
+): Promise<Date[]> {
+  const settings = await getSettings();
+  return slotsForDateKey(toDateArray(settings.availableSlots), dateKey, bookedStarts);
+}
+
+/** yyyy-MM-dd dates that have at least one bookable slot. */
+export async function getBookableDateKeysInRange(
+  bookedStarts: Date[] = [],
+  daysAhead = 60,
+): Promise<string[]> {
+  const settings = await getSettings();
+  const openSlots = toDateArray(settings.availableSlots);
+  const keys: string[] = [];
+  const start = fromZonedTime(`${todayDateKey()}T00:00:00`, AGENCY_TIMEZONE);
+
+  for (let i = 0; i <= daysAhead; i++) {
+    const dateKey = format(
+      toZonedTime(addDays(start, i), AGENCY_TIMEZONE),
+      "yyyy-MM-dd",
+    );
+    const open = slotsForDateKey(openSlots, dateKey, bookedStarts);
+    if (open.length > 0) keys.push(dateKey);
+  }
+
+  return keys;
+}
+
+export async function isValidBookableSlot(
+  startAt: Date,
+  bookedStarts: Date[] = [],
+) {
+  const settings = await getSettings();
+  const openSlots = toDateArray(settings.availableSlots);
+  const isOpen = openSlots.some((s) => sameSlot(s, startAt));
+  if (!isOpen) return false;
+  if (bookedStarts.some((b) => sameSlot(b, startAt))) return false;
+  return true;
 }

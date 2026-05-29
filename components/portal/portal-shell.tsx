@@ -12,19 +12,19 @@ export function PortalShell({
 }) {
   return (
     <div className="portal-shell min-h-screen bg-[#EEEEE8] font-[family-name:var(--font-dm-sans)] text-foreground antialiased">
-      <header className="border-b border-border bg-[#EEEEE8]/90 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <Link href={showNav ? "/dashboard" : "/"} className="flex items-center gap-2">
-            <Image
-              src="/assets/logo.svg"
-              alt="Hylith"
-              width={120}
-              height={28}
-              className="h-7 w-auto"
-              priority
-            />
-          </Link>
-          {showNav ? (
+      {showNav && (
+        <header className="border-b border-border bg-[#EEEEE8]/90 backdrop-blur-sm">
+          <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <Image
+                src="/assets/logo.svg"
+                alt="Hylith"
+                width={120}
+                height={28}
+                className="h-7 w-auto"
+                priority
+              />
+            </Link>
             <nav className="flex items-center gap-4 text-sm">
               <Link
                 href="/dashboard"
@@ -40,10 +40,12 @@ export function PortalShell({
               </Link>
               <SignOutButton />
             </nav>
-          ) : null}
-        </div>
-      </header>
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">{children}</main>
+          </div>
+        </header>
+      )}
+      <main className={showNav ? "mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14" : "flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 sm:py-14"}>
+        {children}
+      </main>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { ogImageMetadata, ogImageUrl, siteConfig } from "./site-config";
 import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils"; 
+import { AuthSessionProvider } from "@/components/providers/session-provider";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -72,7 +73,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", geist.variable, dmSans.variable)}>
       <body className="min-h-screen bg-[#EEEEE8] antialiased"> 
-          {children} 
+          <AuthSessionProvider>
+            {children} 
+          </AuthSessionProvider>
          
 
         {/* <Script

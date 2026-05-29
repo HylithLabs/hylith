@@ -24,35 +24,48 @@ export function SignupForm() {
     setError(null);
     setLoading(true);
 
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-    const data = await res.json().catch(() => ({}));
+      let data: { error?: string } = {};
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        console.error("Error parsing register response:", parseErr);
+      }
 
-    if (!res.ok) {
+      if (!res.ok) {
+        setLoading(false);
+        setError(data.error ?? "Registration failed");
+        return;
+      }
+
+      const signInResult = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
       setLoading(false);
-      setError(data.error ?? "Registration failed");
-      return;
+
+      if (signInResult?.error) {
+        setError("Account created but sign-in failed. Try logging in.");
+        router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+        return;
+      }
+
+      router.push(callbackUrl);
+      router.refresh();
+    } catch (err) {
+      setLoading(false);
+      const message = err instanceof Error ? err.message : "An error occurred during registration";
+      setError(message);
+      console.error("Signup error:", err);
     }
-
-    const signInResult = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    setLoading(false);
-
-    if (signInResult?.error) {
-      router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-      return;
-    }
-
-    router.push(callbackUrl);
-    router.refresh();
   }
 
   return (

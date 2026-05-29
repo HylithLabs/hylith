@@ -19,13 +19,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatDateLabel, formatSlotLabel } from "@/lib/availability";
+import {
+  formatDateLabel,
+  formatSlotLabel,
+  formatSlotTimeKey,
+} from "@/lib/availability-utils";
 
 export function ScheduleForm() {
   const router = useRouter();
   const { data: session } = useSession();
   const [bookableDays, setBookableDays] = useState<string[]>([]);
-  const [timezone, setTimezone] = useState("Asia/Kolkata");
+  const [timezone, setTimezone] = useState("Asia/Dhaka");
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [slots, setSlots] = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState("");
@@ -39,11 +43,19 @@ export function ScheduleForm() {
   const [success, setSuccess] = useState(false);
 
   const loadDays = useCallback(async () => {
-    const res = await fetch("/api/availability");
-    if (!res.ok) return;
-    const data = await res.json();
-    setBookableDays(data.bookableDays ?? []);
-    setTimezone(data.timezone ?? "Asia/Kolkata");
+    try {
+      const res = await fetch("/api/availability");
+      if (!res.ok) {
+        setError("Failed to load available dates");
+        return;
+      }
+      const data = await res.json();
+      setBookableDays(data.bookableDays ?? []);
+      setTimezone(data.timezone ?? "Asia/Dhaka");
+    } catch (err) {
+      setError("Error loading availability. Please refresh the page.");
+      console.error("Load days error:", err);
+    }
   }, []);
 
   useEffect(() => {
@@ -58,28 +70,51 @@ export function ScheduleForm() {
       return;
     }
 
-    fetch(`/api/availability?date=${selectedDateKey}`)
-      .then((r) => r.json())
-      .then((data) => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/availability?date=${selectedDateKey}`);
+        if (!res.ok) {
+          setError("Failed to load time slots");
+          return;
+        }
+        const data = await res.json();
         setSlots(data.slots ?? []);
         setSelectedTime("");
         setSelectedSlotIso(null);
-      });
+      } catch (err) {
+        setError("Error loading time slots. Please try again.");
+        console.error("Fetch slots error:", err);
+      }
+    })();
   }, [selectedDateKey]);
 
   const timeSlots: TimeSlot[] = useMemo(
     () =>
-      slots.map((iso) => ({
-        time: format(parseISO(iso), "HH:mm"),
-        available: true,
-      })),
+      slots.map((iso) => {
+        try {
+          return {
+            time: formatSlotTimeKey(iso),
+            available: true,
+          };
+        } catch (err) {
+          console.error("Error parsing time slot:", iso, err);
+          return {
+            time: "--:--",
+            available: false,
+          };
+        }
+      }),
     [slots],
   );
 
   const slotByTime = useMemo(() => {
     const map = new Map<string, string>();
     for (const iso of slots) {
-      map.set(format(parseISO(iso), "HH:mm"), iso);
+      try {
+        map.set(formatSlotTimeKey(iso), iso);
+      } catch (err) {
+        console.error("Error mapping time slot:", iso, err);
+      }
     }
     return map;
   }, [slots]);
@@ -99,6 +134,14 @@ export function ScheduleForm() {
       setError("Please describe your project (at least 10 characters)");
       return;
     }
+    if (!company.trim()) {
+      setError("Company is required");
+      return;
+    }
+    if (phone.trim().length < 5) {
+      setError("Please enter a valid phone number (at least 5 characters)");
+      return;
+    }
 
     setError(null);
     setEmailWarning(null);
@@ -110,12 +153,17 @@ export function ScheduleForm() {
       body: JSON.stringify({
         startAt: selectedSlotIso,
         projectSummary: projectSummary.trim(),
-        company: company.trim() || undefined,
-        phone: phone.trim() || undefined,
+        company: company.trim(),
+        phone: phone.trim(),
       }),
     });
 
-    const data = await res.json().catch(() => ({}));
+    let data: { error?: string; emailsSent?: boolean } = {};
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      console.error("Error parsing response:", parseErr);
+    }
     setLoading(false);
 
     if (!res.ok) {
@@ -183,19 +231,22 @@ export function ScheduleForm() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="company">Company (optional)</Label>
+                <Label htmlFor="company">Company</Label>
                 <Input
                   id="company"
+                  required
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   className="bg-background"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone (optional)</Label>
+                <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
                   type="tel"
+                  required
+                  minLength={5}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="bg-background"

@@ -1,10 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, type MouseEvent } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  type MouseEvent,
+} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { scrollToAnchor, scrollToTop } from "@/lib/smooth-scroll-anchor";
+import { isAdminEmail } from "@/lib/admin";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -32,6 +40,27 @@ const GLASS_STYLE = {
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const isUserAdmin = session?.user?.email ? isAdminEmail(session.user.email) : false;
+  const dashboardHref = isUserAdmin ? "/admin" : "/dashboard";
+
+  const navItems = useMemo(() => {
+    const items = NAV_LINKS.map((link) => ({
+      ...link,
+      isDashboard: false as const,
+    }));
+    if (!session) return items;
+
+    const teamIndex = items.findIndex((link) => link.label === "Team");
+    const insertAt = teamIndex === -1 ? items.length : teamIndex + 1;
+    items.splice(insertAt, 0, {
+      label: "Dashboard",
+      href: dashboardHref,
+      isDashboard: true as const,
+    });
+    return items;
+  }, [session, dashboardHref]);
 
   /* Lock body scroll when mobile menu is open */
   useEffect(() => {
@@ -92,10 +121,14 @@ const Navbar = () => {
           style={GLASS_STYLE}
           className="nav relative order-2 hidden h-11 min-w-0 items-center justify-between gap-3 rounded-full px-4 text-xs font-semibold sm:h-12 sm:gap-5 sm:px-6 sm:text-sm md:order-none md:flex md:w-auto md:justify-start xl:h-14 xl:gap-8 xl:px-10"
         >
-          {NAV_LINKS.map((link) => (
+          {navItems.map((link) => (
             <Link
               key={link.label}
-              className="cursor-pointer font-medium transition hover:opacity-70"
+              className={
+                link.isDashboard
+                  ? "cursor-pointer font-medium text-blue-600 transition hover:opacity-70"
+                  : "cursor-pointer font-medium transition hover:opacity-70"
+              }
               href={link.href}
               onClick={handleNavClick(link.href)}
             >
@@ -147,12 +180,16 @@ const Navbar = () => {
         }}
       >
         <nav className="flex flex-col items-center gap-8">
-          {NAV_LINKS.map((link, i) => (
+          {navItems.map((link, i) => (
             <Link
               key={link.label}
               href={link.href}
-              onClick={handleNavClick(link.href)}
-              className="text-3xl font-semibold tracking-[-0.02em] text-[#0F0B0A] transition-all duration-300 hover:opacity-60 sm:text-4xl"
+              onClick={link.isDashboard ? closeMenu : handleNavClick(link.href)}
+              className={
+                link.isDashboard
+                  ? "text-3xl font-semibold tracking-[-0.02em] text-blue-600 transition-all duration-300 hover:opacity-60 sm:text-4xl"
+                  : "text-3xl font-semibold tracking-[-0.02em] text-[#0F0B0A] transition-all duration-300 hover:opacity-60 sm:text-4xl"
+              }
               style={{
                 transform: menuOpen
                   ? "translateY(0)"

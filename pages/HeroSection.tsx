@@ -1,16 +1,10 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import { motion } from "motion/react";
 
 const DISCUSS_HREF = "/signup?callbackUrl=/dashboard/schedule";
-const MotionLink = motion.create(Link);
-
-gsap.registerPlugin(useGSAP);
 
 const glassBadgeStyle = {
   letterSpacing: "0",
@@ -65,9 +59,6 @@ const HERO_TILES = [
   },
 ] as const;
 
-const REVEAL_DELAY = 0.35;
-const REVEAL_STAGGER = 0.2;
-
 /** Overflow clip only — outer keeps flex/order classes from the original layout. */
 function RevealClip({
   children,
@@ -95,15 +86,10 @@ function RevealClip({
   );
 }
 
-interface HeroSectionProps {
-  isLoaded?: boolean;
-}
-
 function DiscussCta({ className = "" }: { className?: string }) {
   return (
-    <MotionLink
+    <Link
       href={DISCUSS_HREF}
-      layoutId="hero-button"
       className={[
         "hero-badge z-50 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[0.95rem] font-semibold leading-none sm:h-13 lg:h-11 lg:w-auto lg:max-w-none lg:px-5 lg:text-sm lg:whitespace-nowrap xl:h-16 xl:px-10 xl:text-[1.09rem]",
         className,
@@ -111,56 +97,19 @@ function DiscussCta({ className = "" }: { className?: string }) {
         .filter(Boolean)
         .join(" ")}
       style={glassBadgeStyle}
-      transition={{
-        layout: {
-          type: "tween",
-          ease: "easeInOut",
-          duration: 1.2,
-        },
-      }}
     >
       Discuss Your System
-    </MotionLink>
+    </Link>
   );
 }
 
+interface HeroSectionProps {
+  isLoaded?: boolean;
+}
+
 const HeroSection = ({ isLoaded = true }: HeroSectionProps) => {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useGSAP(
-    () => {
-      const root = sectionRef.current;
-      if (!root || !isLoaded) return;
-
-      const reveals = gsap.utils.toArray<HTMLElement>(".hero-reveal", root);
-      if (!reveals.length) return;
-
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-
-      if (prefersReducedMotion) {
-        gsap.set(reveals, { clearProps: "all" });
-        return;
-      }
-
-      gsap.set(reveals, { y: 100, opacity: 0 });
-
-      gsap.to(reveals, {
-        y: 0,
-        opacity: 1,
-        duration: 0.75,
-        ease: "power1.inOut",
-        stagger: REVEAL_STAGGER,
-        delay: REVEAL_DELAY,
-      });
-    },
-    { scope: sectionRef, dependencies: [isLoaded] },
-  );
-
   return (
     <section
-      ref={sectionRef}
       className="hero section overflow-hidden px-4 pb-10 sm:px-6 sm:pb-12 lg:px-4 lg:pb-8 xl:px-0"
       id="home"
     >
@@ -174,17 +123,11 @@ const HeroSection = ({ isLoaded = true }: HeroSectionProps) => {
               YOUR BUSINESS
             </span>
           </RevealClip>
-          <div className="mt-3 hidden w-full lg:block">
-            <div className="mx-auto inline-flex w-fit flex-row items-center justify-start gap-4">
-              {isLoaded ? (
-                <RevealClip className="flex shrink-0 items-center pb-0">
-                  <span className="inline-flex lg:-translate-y-[0.22em] xl:-translate-y-[0.2em]">
-                    <DiscussCta />
-                  </span>
-                </RevealClip>
-              ) : (
-                <span className="h-11 w-[150px] xl:h-16 xl:w-[200px]" aria-hidden />
-              )}
+          <div className="hidden w-full lg:block">
+            <div className="mx-auto w-fit flex  items-center justify-center gap-4">
+              <span className="inline-flex">
+                <DiscussCta />
+              </span>
               <RevealClip className="flex items-center">
                 <span className="tracking-[-0.05em] leading-none">
                   YOUR BUSINESS
@@ -210,13 +153,7 @@ const HeroSection = ({ isLoaded = true }: HeroSectionProps) => {
       </div>
 
       <div className="mt-5 w-full sm:mt-6 lg:hidden">
-        {isLoaded ? (
-          <RevealClip className="w-full">
-            <DiscussCta />
-          </RevealClip>
-        ) : (
-          <span className="block h-12 w-full sm:h-13" aria-hidden />
-        )}
+        <DiscussCta />
       </div>
 
       <div className="hero-mobile-card relative mt-6 sm:mt-8 xl:hidden">
@@ -225,7 +162,7 @@ const HeroSection = ({ isLoaded = true }: HeroSectionProps) => {
             {HERO_TILES.map((tile, i) => (
               <div
                 key={`hero-tile-${i}`}
-                className="hero-collage-tile overflow-hidden"
+                className="hero-collage-tile overflow-hidden rounded-lg"
                 style={{
                   gridRow: tile.row + 1,
                   gridColumn: tile.col + 1,

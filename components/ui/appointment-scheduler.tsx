@@ -30,11 +30,16 @@ export interface AppointmentSchedulerProps {
   timeSlots: TimeSlot[];
   onDateSelect?: (dateKey: string) => void;
   onTimeSelect?: (time: string) => void;
+  onTimeToggle?: (time: string) => void;
   onTimezoneChange?: (timezone: string) => void;
   onMonthChange?: (month: number, year: number) => void;
   brandName?: string;
   initialSelectedDateKey?: string;
   initialSelectedTime?: string;
+  multiSelect?: boolean;
+  selectedTimes?: string[];
+  /** Dates (yyyy-MM-dd) that have at least one open slot — shown green on the calendar */
+  highlightedDateKeys?: string[];
 }
 
 function toDateKey(year: number, month: number, day: number) {
@@ -58,6 +63,10 @@ export function AppointmentScheduler({
   brandName = "Hylith",
   initialSelectedDateKey,
   initialSelectedTime,
+  multiSelect = false,
+  selectedTimes = [],
+  onTimeToggle,
+  highlightedDateKeys = [],
 }: AppointmentSchedulerProps) {
   const now = new Date();
   const [currentMonth, setCurrentMonth] = useState(now.getMonth());
@@ -71,6 +80,12 @@ export function AppointmentScheduler({
   useEffect(() => {
     onMonthChange?.(currentMonth, currentYear);
   }, [currentMonth, currentYear, onMonthChange]);
+
+  useEffect(() => {
+    if (initialSelectedDateKey) {
+      setSelectedDateKey(initialSelectedDateKey);
+    }
+  }, [initialSelectedDateKey]);
 
   const monthNames = [
     "January",
@@ -92,6 +107,11 @@ export function AppointmentScheduler({
   const bookableSet = useMemo(
     () => new Set(bookableDateKeys ?? []),
     [bookableDateKeys],
+  );
+
+  const highlightedSet = useMemo(
+    () => new Set(highlightedDateKeys),
+    [highlightedDateKeys],
   );
 
   const getDaysInMonth = (month: number, year: number) =>
@@ -134,6 +154,10 @@ export function AppointmentScheduler({
   };
 
   const handleTimeClick = (time: string) => {
+    if (multiSelect) {
+      onTimeToggle?.(time);
+      return;
+    }
     setSelectedTime(time);
     onTimeSelect?.(time);
   };
@@ -263,7 +287,7 @@ export function AppointmentScheduler({
               const dateKey = toDateKey(currentYear, currentMonth, day);
               const available = isDayAvailable(day);
               const isSelected = selectedDateKey === dateKey;
-              const hasIndicator = available && !isSelected;
+              const hasOpenSlots = highlightedSet.has(dateKey);
 
               return (
                 <button
@@ -278,6 +302,11 @@ export function AppointmentScheduler({
                       "scale-105 bg-primary text-primary-foreground shadow-lg",
                     !isSelected &&
                       available &&
+                      hasOpenSlots &&
+                      "border border-green-500/50 bg-green-500/25 text-green-900 hover:bg-green-500/35 dark:text-green-100",
+                    !isSelected &&
+                      available &&
+                      !hasOpenSlots &&
                       "bg-secondary/50 text-foreground hover:bg-secondary",
                     !available &&
                       "cursor-not-allowed text-muted-foreground/40",
@@ -285,9 +314,6 @@ export function AppointmentScheduler({
                   style={{ animationDelay: `${index * 10}ms` }}
                 >
                   {day}
-                  {hasIndicator ? (
-                    <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-foreground" />
-                  ) : null}
                 </button>
               );
             })}
@@ -333,14 +359,16 @@ export function AppointmentScheduler({
           </div>
         </div>
 
-        <div className="scrollbar-thin max-h-[400px] space-y-2 overflow-y-auto pr-2 lg:max-h-[500px]">
+        <div className="scrollbar-thin max-h-[min(70vh,560px)] space-y-2 overflow-y-auto pr-2">
           {timeSlots.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Select an available date to see times.
             </p>
           ) : (
             timeSlots.map((slot, index) => {
-              const isSelected = slot.time === selectedTime;
+              const isSelected = multiSelect
+                ? selectedTimes.includes(slot.time)
+                : slot.time === selectedTime;
               return (
                 <button
                   key={slot.time}
