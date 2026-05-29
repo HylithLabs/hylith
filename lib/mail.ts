@@ -25,6 +25,9 @@ export function getSmtpTransporter(): Transporter | null {
       host: process.env.SMTP_HOST,
       port,
       secure,
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,

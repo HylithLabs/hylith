@@ -1,9 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { format, parseISO } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
+import {
+  AppointmentScheduler,
+  type TimeSlot,
+} from "@/components/ui/appointment-scheduler";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,24 +19,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { formatDateLabel, formatSlotLabel } from "@/lib/availability";
 
 export function ScheduleForm() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [bookableDays, setBookableDays] = useState<string[]>([]);
   const [timezone, setTimezone] = useState("Asia/Kolkata");
-  const [selectedDay, setSelectedDay] = useState<Date | undefined>();
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [slots, setSlots] = useState<string[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedSlotIso, setSelectedSlotIso] = useState<string | null>(null);
   const [projectSummary, setProjectSummary] = useState("");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailWarning, setEmailWarning] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  const bookableSet = new Set(bookableDays);
 
   const loadDays = useCallback(async () => {
     const res = await fetch("/api/availability");
@@ -47,24 +51,47 @@ export function ScheduleForm() {
   }, [loadDays]);
 
   useEffect(() => {
-    if (!selectedDay) {
+    if (!selectedDateKey) {
       setSlots([]);
-      setSelectedSlot(null);
+      setSelectedTime("");
+      setSelectedSlotIso(null);
       return;
     }
 
-    const dateKey = format(selectedDay, "yyyy-MM-dd");
-    fetch(`/api/availability?date=${dateKey}`)
+    fetch(`/api/availability?date=${selectedDateKey}`)
       .then((r) => r.json())
       .then((data) => {
         setSlots(data.slots ?? []);
-        setSelectedSlot(null);
+        setSelectedTime("");
+        setSelectedSlotIso(null);
       });
-  }, [selectedDay]);
+  }, [selectedDateKey]);
+
+  const timeSlots: TimeSlot[] = useMemo(
+    () =>
+      slots.map((iso) => ({
+        time: format(parseISO(iso), "HH:mm"),
+        available: true,
+      })),
+    [slots],
+  );
+
+  const slotByTime = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const iso of slots) {
+      map.set(format(parseISO(iso), "HH:mm"), iso);
+    }
+    return map;
+  }, [slots]);
+
+  function handleTimeSelect(time: string) {
+    setSelectedTime(time);
+    setSelectedSlotIso(slotByTime.get(time) ?? null);
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedSlot) {
+    if (!selectedSlotIso) {
       setError("Please select a time slot");
       return;
     }
@@ -74,13 +101,14 @@ export function ScheduleForm() {
     }
 
     setError(null);
+    setEmailWarning(null);
     setLoading(true);
 
     const res = await fetch("/api/meetings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        startAt: selectedSlot,
+        startAt: selectedSlotIso,
         projectSummary: projectSummary.trim(),
         company: company.trim() || undefined,
         phone: phone.trim() || undefined,
@@ -96,102 +124,64 @@ export function ScheduleForm() {
     }
 
     setSuccess(true);
-    setTimeout(() => router.push("/dashboard"), 1500);
+    if (data.emailsSent === false) {
+      setEmailWarning(
+        "Request saved. Confirmation email could not be sent — we still received your booking.",
+      );
+    }
+    setTimeout(() => router.push("/dashboard"), 2000);
   }
 
-  const selectedStart = selectedSlot ? new Date(selectedSlot) : null;
+  const selectedStart = selectedSlotIso ? new Date(selectedSlotIso) : null;
+  const userName = session?.user?.name ?? "Hylith Team";
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
-      <Card className="border-border bg-card shadow-[0_1px_1px_rgba(15,11,10,0.05),0_4px_16px_rgba(15,11,10,0.06)]">
+    <div className="space-y-8">
+      <AppointmentScheduler
+        userName={userName}
+        meetingTitle="Discovery call"
+        meetingType="Video call"
+        duration="30 minutes"
+        timezone={timezone}
+        bookableDateKeys={bookableDays}
+        timeSlots={timeSlots}
+        onDateSelect={setSelectedDateKey}
+        onTimeSelect={handleTimeSelect}
+        brandName="Hylith"
+        initialSelectedTime={selectedTime}
+      />
+
+      <Card className="mx-auto w-full max-w-5xl border-border bg-card">
         <CardHeader>
-          <CardTitle className="font-[family-name:var(--font-dm-sans)] text-xl tracking-[-0.02em]">
-            Pick a date
+          <CardTitle className="font-[family-name:var(--font-dm-sans)] text-lg tracking-[-0.02em]">
+            Your project
           </CardTitle>
-          <CardDescription>
-            Times shown in {timezone.replace("_", " ")}. Mon–Fri, 10:00–18:00.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center">
-          <Calendar
-            mode="single"
-            selected={selectedDay}
-            onSelect={setSelectedDay}
-            disabled={(date) => {
-              const key = format(date, "yyyy-MM-dd");
-              return !bookableSet.has(key);
-            }}
-            className="rounded-lg border border-border bg-background p-2"
-          />
-        </CardContent>
-      </Card>
-
-      <div className="space-y-6">
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-lg tracking-[-0.02em]">Available times</CardTitle>
+          {selectedStart ? (
             <CardDescription>
-              {selectedDay
-                ? format(selectedDay, "EEEE, MMMM d")
-                : "Select a date first"}
+              {formatDateLabel(selectedStart, timezone)} at{" "}
+              {formatSlotLabel(selectedStart, timezone)}
             </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {selectedDay && slots.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No slots on this day.</p>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {slots.map((iso) => {
-                  const d = parseISO(iso);
-                  const label = formatSlotLabel(d, timezone);
-                  const active = selectedSlot === iso;
-                  return (
-                    <button
-                      key={iso}
-                      type="button"
-                      onClick={() => setSelectedSlot(iso)}
-                      className={cn(
-                        "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
-                        active
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background hover:border-primary/40",
-                      )}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-lg tracking-[-0.02em]">Your project</CardTitle>
-            {selectedStart ? (
-              <CardDescription>
-                {formatDateLabel(selectedStart, timezone)} at{" "}
-                {formatSlotLabel(selectedStart, timezone)}
-              </CardDescription>
-            ) : (
-              <CardDescription>Select a date and time to continue</CardDescription>
-            )}
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={onSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="summary">What are you building?</Label>
-                <Textarea
-                  id="summary"
-                  required
-                  rows={4}
-                  value={projectSummary}
-                  onChange={(e) => setProjectSummary(e.target.value)}
-                  placeholder="Brief overview of your product, goals, and timeline…"
-                  className="resize-none bg-background"
-                />
-              </div>
+          ) : (
+            <CardDescription>
+              Select a date and time above, then tell us what you are building.
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="summary">What are you building?</Label>
+              <Textarea
+                id="summary"
+                required
+                rows={4}
+                value={projectSummary}
+                onChange={(e) => setProjectSummary(e.target.value)}
+                placeholder="Brief overview of your product, goals, and timeline…"
+                className="resize-none bg-background"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="company">Company (optional)</Label>
                 <Input
@@ -211,27 +201,32 @@ export function ScheduleForm() {
                   className="bg-background"
                 />
               </div>
-              {error ? (
-                <p className="text-sm text-destructive" role="alert">
-                  {error}
-                </p>
-              ) : null}
-              {success ? (
-                <p className="text-sm text-foreground" role="status">
-                  Request sent. Redirecting to dashboard…
-                </p>
-              ) : null}
-              <Button
-                type="submit"
-                disabled={loading || !selectedSlot || success}
-                className="h-11 w-full rounded-full font-semibold"
-              >
-                {loading ? "Submitting…" : "Confirm & request call"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+            {error ? (
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            ) : null}
+            {success ? (
+              <p className="text-sm text-foreground" role="status">
+                Request sent. Redirecting to dashboard…
+              </p>
+            ) : null}
+            {emailWarning ? (
+              <p className="text-sm text-muted-foreground" role="status">
+                {emailWarning}
+              </p>
+            ) : null}
+            <Button
+              type="submit"
+              disabled={loading || !selectedSlotIso || success}
+              className="h-11 rounded-full px-8 font-semibold"
+            >
+              {loading ? "Submitting…" : "Confirm & request call"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

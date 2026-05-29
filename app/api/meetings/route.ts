@@ -98,21 +98,33 @@ export async function POST(request: Request) {
       phone: parsed.data.phone,
     });
 
-    await sendMeetingEmails({
-      clientName: meeting.name,
-      clientEmail: meeting.email,
-      startAt: meeting.startAt,
-      timezone: meeting.timezone,
-      projectSummary: meeting.projectSummary,
-      company: meeting.company ?? undefined,
-      phone: meeting.phone ?? undefined,
-    });
+    let emailsSent = false;
+    try {
+      const emailResult = await sendMeetingEmails({
+        clientName: meeting.name,
+        clientEmail: meeting.email,
+        startAt: meeting.startAt,
+        timezone: meeting.timezone,
+        projectSummary: meeting.projectSummary,
+        company: meeting.company ?? undefined,
+        phone: meeting.phone ?? undefined,
+      });
+      emailsSent = !emailResult.skipped;
+    } catch (emailError) {
+      // Booking is saved even if SMTP is down or misconfigured
+      console.error("Meeting saved but emails failed:", emailError);
+    }
 
-    return NextResponse.json({ meeting }, { status: 201 });
+    return NextResponse.json(
+      { meeting, emailsSent },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Create meeting error:", error);
+    const message =
+      error instanceof Error ? error.message : "Failed to create meeting request";
     return NextResponse.json(
-      { error: "Failed to create meeting request" },
+      { error: message.includes("Mongo") ? "Database error. Try again." : "Failed to create meeting request" },
       { status: 500 },
     );
   }
