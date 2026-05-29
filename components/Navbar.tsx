@@ -22,6 +22,12 @@ const NAV_LINKS = [
   { label: "Reviews", href: "#reviews" },
 ];
 
+type NavItem = {
+  label: string;
+  href: string;
+  isDashboard: boolean;
+};
+
 /** Shared glass style for both desktop pill and mobile menu */
 const GLASS_STYLE = {
   background: "rgba(255, 255, 255, 0.4)",
@@ -45,10 +51,10 @@ const Navbar = () => {
   const isUserAdmin = session?.user?.email ? isAdminEmail(session.user.email) : false;
   const dashboardHref = isUserAdmin ? "/admin" : "/dashboard";
 
-  const navItems = useMemo(() => {
-    const items = NAV_LINKS.map((link) => ({
+  const navItems = useMemo((): NavItem[] => {
+    const items: NavItem[] = NAV_LINKS.map((link) => ({
       ...link,
-      isDashboard: false as const,
+      isDashboard: false,
     }));
     if (!session) return items;
 
@@ -57,7 +63,7 @@ const Navbar = () => {
     items.splice(insertAt, 0, {
       label: "Dashboard",
       href: dashboardHref,
-      isDashboard: true as const,
+      isDashboard: true,
     });
     return items;
   }, [session, dashboardHref]);
