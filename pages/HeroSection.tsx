@@ -2,9 +2,13 @@
 
 import React, { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { motion } from "motion/react";
+
+const DISCUSS_HREF = "/signup?callbackUrl=/dashboard/schedule";
+const MotionLink = motion.create(Link);
 
 gsap.registerPlugin(useGSAP);
 
@@ -97,7 +101,8 @@ interface HeroSectionProps {
 
 function DiscussCta({ className = "" }: { className?: string }) {
   return (
-    <motion.span
+    <MotionLink
+      href={DISCUSS_HREF}
       layoutId="hero-button"
       className={[
         "hero-badge z-50 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[0.95rem] font-semibold leading-none sm:h-13 lg:h-11 lg:w-auto lg:max-w-none lg:px-5 lg:text-sm lg:whitespace-nowrap xl:h-16 xl:px-10 xl:text-[1.09rem]",
@@ -115,7 +120,7 @@ function DiscussCta({ className = "" }: { className?: string }) {
       }}
     >
       Discuss Your System
-    </motion.span>
+    </MotionLink>
   );
 }
 

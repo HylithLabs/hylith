@@ -335,7 +335,7 @@ const Second = () => {
               <HiArrowLongRight size={24} className="shrink-0" />
             </a>
             <a
-              href="#contact"
+              href="/signup?callbackUrl=/dashboard/schedule"
               className="second-link second-copy flex h-7 min-w-30 cursor-pointer items-center justify-between gap-3 border-b-2 border-[#0F0B0A] text-[0.95rem] font-medium"
             >
               <span>Discuss</span>
@@ -354,7 +354,7 @@ const Second = () => {
             <HiArrowLongRight size={24} className="shrink-0" />
           </a>
           <a
-            href="#contact"
+            href="/signup?callbackUrl=/dashboard/schedule"
             className="second-link second-copy pointer-events-auto absolute right-0 bottom-0 flex h-7 min-w-30 cursor-pointer items-center justify-between gap-4 border-b-2 border-[#0F0B0A] text-[0.95rem] font-medium"
           >
             <span>Discuss</span>

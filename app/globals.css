@@ -593,3 +593,19 @@ html.is-global-loading #__next {
   0%, 100% { transform: translate(0, 0); }
   50% { transform: translate(3px, 3px); }
 }
+
+/* Client portal — Hylith desktop tokens */
+.portal-shell {
+  --background: #efefed;
+  --foreground: #0f0b0a;
+  --card: #ffffff;
+  --card-foreground: #0f0b0a;
+  --primary: #0f0b0a;
+  --primary-foreground: #efefed;
+  --muted-foreground: #6b6b6b;
+  --border: #d6d6d4;
+}
+
+.portal-auth-card {
+  border-radius: 0.75rem;
+}
