@@ -172,8 +172,10 @@ const HeroSection = ({ isLoaded = true }: HeroSectionProps) => {
           <div className="mt-3 hidden w-full lg:block">
             <div className="mx-auto inline-flex w-fit flex-row items-center justify-start gap-4">
               {isLoaded ? (
-                <RevealClip className="flex items-center justify-start p-8 -m-8">
-                  <DiscussCta />
+                <RevealClip className="flex shrink-0 items-center pb-0">
+                  <span className="inline-flex lg:-translate-y-[0.22em] xl:-translate-y-[0.2em]">
+                    <DiscussCta />
+                  </span>
                 </RevealClip>
               ) : (
                 <span className="h-11 w-[150px] xl:h-16 xl:w-[200px]" aria-hidden />
