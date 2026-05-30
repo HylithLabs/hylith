@@ -1,14 +1,22 @@
 import type { MetadataRoute } from "next";
-import { absoluteUrl } from "./site-config";
+import { absoluteUrl, siteConfig } from "./site-config";
+
+const privatePaths = [
+  "/api/",
+  "/admin",
+  "/dashboard",
+  "/login",
+  "/signup",
+] as const;
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/private/"],
+      disallow: [...privatePaths],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
-    host: absoluteUrl(),
+    host: siteConfig.url,
   };
 }

@@ -8,8 +8,11 @@ import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { RealtimeSyncProvider } from "@/components/providers/realtime-sync-provider";
 
+import { privateRouteMetadata } from "@/lib/seo/metadata";
+
 export const metadata: Metadata = {
-  robots: { index: false, follow: false },
+  title: "Admin",
+  ...privateRouteMetadata,
 };
 
 export const dynamic = "force-dynamic";

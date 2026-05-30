@@ -119,6 +119,7 @@ const Forth = () => {
       id="what-we-do"
       className="flex min-h-screen w-full flex-col items-center justify-center gap-10 bg-[#EFEFED] px-4 py-20 sm:gap-16 sm:px-6 sm:py-24 xl:py-30"
     >
+      <h2 className="sr-only">Services</h2>
       {/* ================= Accordion ================= */}
       <div className="w-full max-w-7xl rounded-2xl border border-black/5 bg-[#F8F8F6] p-5 shadow-sm sm:rounded-3xl sm:p-8 md:p-10">
         {data.map((item, index) => {
@@ -194,6 +195,7 @@ const Forth = () => {
       </div>
 
       {/* ================= Marquee Reviews ================= */}
+      <h2 className="sr-only">Client reviews</h2>
       <div id="reviews" className="relative w-full max-w-7xl space-y-1 overflow-hidden">
         {/* Fade edges */}
         <div className="pointer-events-none absolute top-0 left-0 z-10 h-full w-10 bg-linear-to-r from-[#EFEFED] to-transparent sm:w-16 md:w-24" />

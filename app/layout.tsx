@@ -14,6 +14,8 @@ const dmSans = localFont({
   display: "swap",
 });
 
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
@@ -26,10 +28,22 @@ export const metadata: Metadata = {
   authors: [{ name: siteConfig.legalName, url: siteConfig.url }],
   creator: siteConfig.legalName,
   publisher: siteConfig.legalName,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  icons: {
+    icon: [{ url: "/assets/logo.svg", type: "image/svg+xml" }],
+    shortcut: ["/assets/logo.svg"],
+  },
   alternates: {
     canonical: "/",
   },
   category: "technology",
+  ...(googleSiteVerification
+    ? { verification: { google: googleSiteVerification } }
+    : {}),
   openGraph: {
     title: siteConfig.title,
     description: siteConfig.ogDescription,
@@ -72,10 +86,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable, dmSans.variable)}>
-      <body className="min-h-screen bg-[#EEEEE8] antialiased"> 
-          <AuthSessionProvider>
-            {children} 
-          </AuthSessionProvider>
+      <body className="min-h-screen bg-[#EEEEE8] antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[#0F0B0A] focus:px-4 focus:py-2 focus:text-sm focus:text-[#EFEFED]"
+        >
+          Skip to main content
+        </a>
+        <AuthSessionProvider>{children}</AuthSessionProvider>
          
 
         {/* <Script

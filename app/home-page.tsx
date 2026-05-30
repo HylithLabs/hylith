@@ -12,7 +12,7 @@ export default function HomePage() {
   return (
     <>
       <SmoothScrollBoundary />
-      <main>
+      <main id="main-content">
         <Navbar />
         <HeroSection />
         <Second />
