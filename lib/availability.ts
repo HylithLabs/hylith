@@ -1,7 +1,6 @@
 import { addDays, addHours, format, isBefore } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
-import { connectMongoose } from "./mongoose";
-import { AvailabilitySettings } from "@/models/availability-settings";
+import { getPortalSettings } from "@/lib/data/settings.repository";
 import {
   AGENCY_TIMEZONE,
   ALL_SLOT_TIME_LABELS,
@@ -23,15 +22,12 @@ export { getFutureDateKeys, todayDateKey } from "./availability-utils";
 const MIN_LEAD_HOURS = 24;
 
 export async function getSettings() {
-  await connectMongoose();
-  let settings = await AvailabilitySettings.findOne();
-  if (!settings) {
-    settings = await AvailabilitySettings.create({
-      timezone: AGENCY_TIMEZONE,
-      availableSlots: [],
-    });
-  }
-  return settings;
+  const settings = await getPortalSettings();
+  return {
+    availableSlots: settings.availableSlots,
+    slotDurationMinutes: settings.slotDurationMinutes,
+    timezone: settings.timezone,
+  };
 }
 
 export function getAgencyTimezone() {

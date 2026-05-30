@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { cn } from "@/lib/utils";
@@ -29,20 +29,11 @@ import { Mail, Calendar, FileText, User, Search, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminAvailabilitySettings } from "@/components/portal/AdminAvailabilitySettings";
 import { AdminScheduleView } from "@/components/portal/AdminScheduleView";
+import { AdminWhomToSend } from "@/components/portal/AdminWhomToSend";
+import { useAdminMeetings } from "@/lib/hooks/use-admin-meetings";
 
-export type AdminMeetingItem = {
-  _id: string;
-  userId: string;
-  email: string;
-  name: string;
-  startAt: string;
-  timezone: string;
-  status: "pending" | "confirmed" | "cancelled" | "closed";
-  projectSummary: string;
-  company: string | null;
-  phone: string | null;
-  createdAt: string;
-};
+export type { AdminMeetingItem } from "@/lib/types/admin-meeting";
+import type { AdminMeetingItem } from "@/lib/types/admin-meeting";
 
 type BGVariantType =
   | "dots"
@@ -144,35 +135,19 @@ function statusBadgeClass(status: AdminMeetingItem["status"]) {
 }
 
 export function AdminMeetingsDashboard() {
-  const [meetings, setMeetings] = useState<AdminMeetingItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: meetings = [],
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useAdminMeetings();
   const [selectedMeeting, setSelectedMeeting] = useState<AdminMeetingItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [closing, setClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadMeetings = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/admin/meetings");
-      if (!res.ok) {
-        setError("Failed to load meetings");
-        return;
-      }
-      const data = await res.json();
-      setMeetings(data.meetings ?? []);
-    } catch {
-      setError("Failed to load meetings");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadMeetings();
-  }, [loadMeetings]);
+  const loadError = queryError ? "Failed to load meetings" : null;
 
   const filteredMeetings = meetings.filter((m) => {
     const query = searchQuery.toLowerCase();
@@ -211,7 +186,7 @@ export function AdminMeetingsDashboard() {
       }
       setIsDialogOpen(false);
       setSelectedMeeting(null);
-      await loadMeetings();
+      await refetch();
     } catch {
       setError("Failed to close meeting");
     } finally {
@@ -233,9 +208,9 @@ export function AdminMeetingsDashboard() {
           </p>
         </div>
 
-        {error ? (
+        {error || loadError ? (
           <p className="text-sm text-destructive" role="alert">
-            {error}
+            {error ?? loadError}
           </p>
         ) : null}
 
@@ -244,6 +219,7 @@ export function AdminMeetingsDashboard() {
             <TabsTrigger value="requests">Meeting Requests</TabsTrigger>
             <TabsTrigger value="availability">Time for Meeting</TabsTrigger>
             <TabsTrigger value="schedule">Booked Schedule</TabsTrigger>
+            <TabsTrigger value="whom-to-send">Whom to Send</TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests" className="space-y-6">
@@ -374,6 +350,10 @@ export function AdminMeetingsDashboard() {
 
           <TabsContent value="schedule">
             <AdminScheduleView meetings={meetings} />
+          </TabsContent>
+
+          <TabsContent value="whom-to-send">
+            <AdminWhomToSend />
           </TabsContent>
         </Tabs>
       </div>

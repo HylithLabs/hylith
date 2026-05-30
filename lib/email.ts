@@ -1,12 +1,6 @@
 import { formatDateLabel, formatSlotLabel } from "@/lib/availability-utils";
-import { getMailFrom, getSmtpTransporter } from "@/lib/mail";
-
-function getAgencyEmail() {
-  return (
-    process.env.AGENCY_NOTIFICATION_EMAIL ??
-    "jotirmoybhowmik1976@gmail.com"
-  );
-}
+import { listNotificationRecipients } from "@/lib/data/notification-recipients.repository";
+import { sendBulkEmail, sendEmail } from "@/lib/email/email-service";
 
 export async function sendMeetingEmails(params: {
   clientName: string;
@@ -17,17 +11,8 @@ export async function sendMeetingEmails(params: {
   company?: string;
   phone?: string;
 }) {
-  const transporter = getSmtpTransporter();
-  if (!transporter) {
-    console.warn(
-      "SMTP not configured (SMTP_HOST, SMTP_USER, SMTP_PASSWORD); skipping emails",
-    );
-    return { skipped: true };
-  }
-
   const dateLabel = formatDateLabel(params.startAt, params.timezone);
   const timeLabel = formatSlotLabel(params.startAt, params.timezone);
-  const from = getMailFrom();
 
   const details = [
     `Client: ${params.clientName}`,
@@ -40,26 +25,42 @@ export async function sendMeetingEmails(params: {
     .filter(Boolean)
     .join("\n");
 
-  const results = await Promise.allSettled([
-    transporter.sendMail({
-      from,
-      to: getAgencyEmail(),
-      replyTo: params.clientEmail,
-      subject: `New discovery call request — ${params.clientName}`,
-      text: `A client requested a discovery call.\n\n${details}\n\nReply to confirm the time.`,
-    }),
-    transporter.sendMail({
-      from,
-      to: params.clientEmail,
-      subject: "We received your discovery call request — Hylith",
-      text: `Hi ${params.clientName},\n\nThanks for booking with Hylith. We received your request for:\n${dateLabel} at ${timeLabel} (${params.timezone})\n\nWe'll confirm within 24 hours. Questions? Reply to this email or write hello@hylith.com.\n\n— Hylith`,
-    }),
-  ]);
+  const agencySubject = `New discovery call request — ${params.clientName}`;
+  const agencyBody = `A client requested a discovery call.\n\n${details}\n\nReply to confirm the time.`;
 
-  const failed = results.filter((r) => r.status === "rejected");
-  if (failed.length > 0) {
-    console.error("Email sending errors:", failed.map((f) => (f as PromiseRejectedResult).reason));
+  const clientSubject = "We received your discovery call request — Hylith";
+  const clientBody = `Hi ${params.clientName},\n\nThanks for booking with Hylith. We received your request for:\n${dateLabel} at ${timeLabel} (${params.timezone})\n\nWe'll confirm within 24 hours. Questions? Reply to this email or write hello@hylith.com.\n\n— Hylith`;
+
+  const recipients = await listNotificationRecipients();
+  const adminEmails = recipients.map((r) => r.email);
+
+  if (adminEmails.length === 0) {
+    console.warn(
+      "No notification_recipients configured; skipping agency notification emails",
+    );
+  } else {
+    const bulk = await sendBulkEmail(adminEmails, {
+      subject: agencySubject,
+      text: agencyBody,
+    });
+    if (bulk.skipped || bulk.failed.length > 0) {
+      console.error("Agency notification failures:", bulk.failed);
+    }
   }
 
-  return { skipped: false, partialFailure: failed.length > 0 };
+  const clientResult = await sendEmail(
+    params.clientEmail,
+    clientSubject,
+    clientBody,
+  );
+
+  if (!clientResult.success) {
+    return {
+      skipped: false,
+      partialFailure: true,
+      clientEmailFailed: true,
+    };
+  }
+
+  return { skipped: false, partialFailure: false };
 }

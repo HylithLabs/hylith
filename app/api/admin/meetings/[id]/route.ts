@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import mongoose from "mongoose";
-import { connectMongoose } from "@/lib/mongoose";
-import { Meeting } from "@/models/meeting";
 import { requireAdminSession } from "@/lib/admin-server";
+import { updateAssignmentStatus } from "@/lib/data/assignments.repository";
 
 const updateSchema = z.object({
   status: z.literal("closed"),
 });
+
+const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidMeetingId(id: string) {
+  return OBJECT_ID_RE.test(id) || UUID_RE.test(id);
+}
 
 export async function PATCH(
   request: Request,
@@ -20,7 +26,7 @@ export async function PATCH(
 
   const { id } = await context.params;
 
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!isValidMeetingId(id)) {
     return NextResponse.json({ error: "Invalid meeting ID" }, { status: 400 });
   }
 
@@ -31,14 +37,11 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    await connectMongoose();
-    const meeting = await Meeting.findOneAndUpdate(
-      { _id: new mongoose.Types.ObjectId(id), status: "pending" },
-      { $set: { status: "closed" } },
-      { new: true },
-    );
+    const updated = await updateAssignmentStatus(id, "closed", {
+      previousStatus: "pending",
+    });
 
-    if (!meeting) {
+    if (!updated) {
       return NextResponse.json(
         { error: "Meeting not found or already closed" },
         { status: 404 },
@@ -46,10 +49,7 @@ export async function PATCH(
     }
 
     return NextResponse.json({
-      meeting: {
-        _id: meeting._id.toString(),
-        status: meeting.status,
-      },
+      meeting: { _id: id, status: "closed" },
     });
   } catch (error) {
     console.error("Admin update meeting error:", error);

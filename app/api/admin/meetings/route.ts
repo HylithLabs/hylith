@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { connectMongoose } from "@/lib/mongoose";
-import { Meeting } from "@/models/meeting";
 import { requireAdminSession } from "@/lib/admin-server";
+import { listAssignmentsForAdmin } from "@/lib/data/assignments.repository";
 
 export async function GET() {
   const session = await requireAdminSession();
@@ -9,26 +8,11 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await connectMongoose();
-  const meetings = await Meeting.find({
-    status: { $in: ["pending", "confirmed", "closed"] },
-  })
-    .sort({ startAt: -1 })
-    .lean();
-
-  return NextResponse.json({
-    meetings: meetings.map((m) => ({
-      _id: m._id.toString(),
-      userId: m.userId,
-      email: m.email,
-      name: m.name,
-      startAt: m.startAt.toISOString(),
-      timezone: m.timezone,
-      status: m.status,
-      projectSummary: m.projectSummary,
-      company: m.company ?? null,
-      phone: m.phone ?? null,
-      createdAt: m.createdAt.toISOString(),
-    })),
-  });
+  try {
+    const meetings = await listAssignmentsForAdmin();
+    return NextResponse.json({ meetings });
+  } catch (error) {
+    console.error("Admin list meetings error:", error);
+    return NextResponse.json({ error: "Failed to load meetings" }, { status: 500 });
+  }
 }

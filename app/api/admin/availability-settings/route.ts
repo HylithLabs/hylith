@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { connectMongoose } from "@/lib/mongoose";
-import { AvailabilitySettings } from "@/models/availability-settings";
 import { requireAdminSession } from "@/lib/admin-server";
 import { AGENCY_TIMEZONE } from "@/lib/availability-constants";
+import {
+  getPortalSettings,
+  updatePortalSettings,
+} from "@/lib/data/settings.repository";
 
 const patchSchema = z.object({
   availableSlots: z.array(z.string().min(1)),
@@ -38,16 +40,7 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await connectMongoose();
-  let settings = await AvailabilitySettings.findOne().lean();
-  if (!settings) {
-    const created = await AvailabilitySettings.create({
-      timezone: AGENCY_TIMEZONE,
-      availableSlots: [],
-    });
-    settings = created.toObject();
-  }
-
+  const settings = await getPortalSettings();
   return NextResponse.json({ settings: serializeSettings(settings) });
 }
 
@@ -71,29 +64,10 @@ export async function PATCH(request: Request) {
       .map(normalizeSlotIso)
       .filter((s): s is string => s !== null);
 
-    await connectMongoose();
-    const settings = await AvailabilitySettings.findOneAndUpdate(
-      {},
-      {
-        $set: {
-          availableSlots,
-          timezone: AGENCY_TIMEZONE,
-        },
-        $unset: {
-          workStartHour: "",
-          workEndHour: "",
-          workDays: "",
-        },
-      },
-      { new: true, upsert: true },
-    ).lean();
-
-    if (!settings) {
-      return NextResponse.json(
-        { error: "Failed to save availability" },
-        { status: 500 },
-      );
-    }
+    const settings = await updatePortalSettings({
+      availableSlots,
+      timezone: AGENCY_TIMEZONE,
+    });
 
     return NextResponse.json({
       settings: serializeSettings(settings),
