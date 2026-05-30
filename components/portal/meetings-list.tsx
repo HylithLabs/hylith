@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { projectLabel } from "@/lib/meeting-display";
 
 export type MeetingItem = {
   _id: string;
@@ -68,7 +69,7 @@ export function MeetingsList({ meetings }: { meetings: MeetingItem[] }) {
                   {format(zoned, "EEEE, MMM d · h:mm a")}
                 </p>
                 <p className="line-clamp-2 text-sm text-muted-foreground">
-                  {m.projectSummary}
+                  {projectLabel(m.projectSummary)}
                 </p>
               </div>
               <Badge variant={statusVariant(m.status)} className="w-fit capitalize">

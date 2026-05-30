@@ -15,6 +15,9 @@ const credentialsSchema = z.object({
   password: z.string().min(8),
 });
 
+// UUID v4 pattern — any other format (e.g. Mongo ObjectId) is stale
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   providers: [
@@ -71,6 +74,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       if (user?.email) {
         token.role = isAdminEmail(user.email) ? "admin" : "user";
+      }
+
+      // Heal stale session IDs left over from a previous DB (e.g. Mongo ObjectIds).
+      // Only runs when the token already exists but sub doesn't look like a UUID.
+      if (token.sub && token.email && !UUID_RE.test(token.sub)) {
+        const dbUser = await findUserByEmail(token.email as string);
+        if (dbUser) {
+          token.sub = dbUser.id;
+          token.role = isAdminEmail(dbUser.email) ? "admin" : dbUser.role;
+        }
       }
 
       return token;

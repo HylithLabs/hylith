@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { projectLabel } from "@/lib/meeting-display";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -110,7 +111,7 @@ function MeetingCard({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {meeting.projectSummary}
+                  {projectLabel(meeting.projectSummary)}
                 </h3>
                 <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
@@ -148,10 +149,6 @@ function StatCard({
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.4 }}
-      whileHover={{ scale: 1.03, y: -5 }}
     >
       <Card className="border-border bg-[#EEEEE8]">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -173,10 +170,6 @@ function StatCard({
 function CtaCard({ disabled }: { disabled: boolean }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3, duration: 0.4 }}
-      whileHover={disabled ? undefined : { scale: 1.02 }}
     >
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-[#0F0B0A] to-[#1a1412] text-white">
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
@@ -193,15 +186,14 @@ function CtaCard({ disabled }: { disabled: boolean }) {
               <Button
                 disabled
                 size="lg"
-                className="w-full rounded-full bg-white/20 text-white sm:w-auto"
+                className="w-full cursor-not-allowed rounded-full bg-white/20 text-white sm:w-auto"
               >
                 Pending Meeting Exists
               </Button>
             ) : (
               <Button
-                asChild
                 size="lg"
-                className="w-full rounded-full bg-white text-[#0F0B0A] hover:bg-zinc-100 sm:w-auto"
+                className="w-full cursor-pointer rounded-full bg-white text-[#0F0B0A] hover:bg-white/90 sm:w-auto"
               >
                 <Link href="/dashboard/schedule">Schedule Discovery Call</Link>
               </Button>
@@ -238,9 +230,6 @@ export function ClientDashboard({
       animate="visible"
     >
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
       >
         <h1 className="font-[family-name:var(--font-dm-sans)] text-4xl font-bold tracking-tight text-foreground md:text-5xl">
           Welcome back, {userName}
@@ -255,13 +244,11 @@ export function ClientDashboard({
           title="Pending Meetings"
           value={pendingCount}
           icon={AlertCircle}
-          delay={0.1}
         />
         <StatCard
           title="Closed Meetings"
           value={closedCount}
           icon={CheckCircle2}
-          delay={0.2}
         />
       </div>
 
