@@ -92,22 +92,29 @@ export async function POST(request: Request) {
       phone: parsed.data.phone,
     });
 
-    let emailsSent = false;
-    try {
-      const emailResult = await sendMeetingEmails({
-        clientName: meeting.name,
-        clientEmail: meeting.email,
-        startAt: new Date(meeting.startAt),
-        timezone: meeting.timezone,
-        projectSummary: meeting.projectSummary,
-        company: meeting.company ?? undefined,
-        phone: meeting.phone ?? undefined,
-      });
-      emailsSent = !("skipped" in emailResult && emailResult.skipped);
-    } catch (emailError) {
-      console.error("Meeting saved but emails failed:", emailError);
-    }
+    // Send emails asynchronously to avoid blocking the API response.
+    // This makes the meeting submit faster for the client. We still log
+    // failures from the background task.
+    let emailsSent: boolean | null = null;
+    (async () => {
+      try {
+        const emailResult = await sendMeetingEmails({
+          clientName: meeting.name,
+          clientEmail: meeting.email,
+          startAt: new Date(meeting.startAt),
+          timezone: meeting.timezone,
+          projectSummary: meeting.projectSummary,
+          company: meeting.company ?? undefined,
+          phone: meeting.phone ?? undefined,
+        });
+        emailsSent = !("skipped" in emailResult && emailResult.skipped);
+      } catch (emailError) {
+        console.error("Meeting saved but emails failed:", emailError);
+        emailsSent = false;
+      }
+    })();
 
+    // Return immediately; email sending continues in background.
     return NextResponse.json({ meeting, emailsSent }, { status: 201 });
   } catch (error) {
     console.error("Create meeting error:", error);

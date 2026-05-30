@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { format, parseISO } from "date-fns";
+import { Confetti, type ConfettiRef } from "@/components/ui/confetti";
 import {
   AppointmentScheduler,
   type TimeSlot,
@@ -31,6 +32,7 @@ import { useBookableDays, useSlotsForDay } from "@/lib/hooks/use-availability";
 export function ScheduleForm() {
   const router = useRouter();
   const { data: session } = useSession();
+  const confettiRef = useRef<ConfettiRef>(null);
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedSlotIso, setSelectedSlotIso] = useState<string | null>(null);
@@ -60,6 +62,16 @@ export function ScheduleForm() {
     setSelectedTime("");
     setSelectedSlotIso(null);
   }, [selectedDateKey, slots]);
+
+  useEffect(() => {
+    if (success && confettiRef.current) {
+      confettiRef.current.fire({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.5 },
+      });
+    }
+  }, [success]);
 
   const timeSlots: TimeSlot[] = useMemo(
     () =>
@@ -161,7 +173,21 @@ export function ScheduleForm() {
   const userName = session?.user?.name ?? "Hylith Team";
 
   return (
-    <div className="space-y-8">
+    <>
+      <Confetti
+        ref={confettiRef}
+        manualstart={true}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 50,
+        }}
+      />
+      <div className="space-y-8">
       <AppointmentScheduler
         userName={userName}
         meetingTitle="Discovery call"
@@ -264,6 +290,7 @@ export function ScheduleForm() {
           </form>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }

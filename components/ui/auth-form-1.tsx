@@ -198,7 +198,10 @@ function AuthSeparator({ text = "Or continue with" }: AuthSeparatorProps) {
         <Separator />
       </div>
       <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-card py-1 rounded-full border border-gray-200 px-2 text-muted-foreground bg-[#F8F7F6]">{text}</span>
+        <span className="bg-card py-1 rounded-full border border-gray-2
+        
+        
+        00 px-2 text-muted-foreground bg-[#F8F7F6]">{text}</span>
       </div>
     </div>
   );
