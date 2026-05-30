@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { countPendingAssignments } from "@/lib/data/assignments.repository";
+import { findUserByEmail } from "@/lib/data/users.repository";
 import { ScheduleForm } from "@/components/portal/schedule-form";
 import { ScheduleDataProvider } from "@/components/providers/schedule-data-provider";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,13 @@ export const dynamic = "force-dynamic";
 
 export default async function SchedulePage() {
   const session = await auth();
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.email) {
     redirect("/login?callbackUrl=/dashboard/schedule");
   }
 
-  const pendingCount = await countPendingAssignments(session.user.id);
+  const dbUser = await findUserByEmail(session.user.email);
+  const clientId = dbUser?.id ?? session.user.id;
+  const pendingCount = await countPendingAssignments(clientId);
 
   if (pendingCount > 0) {
     return (

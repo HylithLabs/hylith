@@ -1,5 +1,6 @@
 import { formatDateLabel, formatSlotLabel } from "@/lib/availability-utils";
-import { sendViaBrevo, getAdminEmails } from "@/lib/brevo";
+import { sendViaBrevo } from "@/lib/brevo";
+import { listNotificationRecipients } from "@/lib/data/notification-recipients.repository";
 import { logEmailAttempt } from "@/lib/data/email-logs.repository";
 
 // ── Parse projectSummary JSON (backward-compat) ───────────────────────────────
@@ -167,10 +168,21 @@ export async function sendMeetingEmails(params: {
 
   // ── Admin notification ───────────────────────────────────────────────────────
 
-  const adminEmails = getAdminEmails();
+  let adminEmails: string[] = [];
+  try {
+    adminEmails = [
+      ...new Set(
+        (await listNotificationRecipients())
+          .map((recipient) => recipient.email.trim().toLowerCase())
+          .filter((email) => email.includes("@")),
+      ),
+    ];
+  } catch (error) {
+    console.warn("[email] Failed to load admin recipients:", error);
+  }
 
   if (adminEmails.length === 0) {
-    console.warn("[email] No admin recipients — set AGENCY_NOTIFICATION_EMAIL in env");
+    console.warn("[email] No admin recipients — add emails in admin dashboard");
   } else {
     const adminResult = await sendViaBrevo({
       to: adminEmails,

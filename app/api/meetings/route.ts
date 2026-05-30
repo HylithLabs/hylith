@@ -10,6 +10,7 @@ import {
   listAssignmentsForClient,
   listBookedStartTimes,
 } from "@/lib/data/assignments.repository";
+import { findUserByEmail } from "@/lib/data/users.repository";
 
 const createSchema = z.object({
   startAt: z.string().datetime(),
@@ -28,12 +29,14 @@ const MAX_PENDING = 1;
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const meetings = await listAssignmentsForClient(session.user.id);
+    const dbUser = await findUserByEmail(session.user.email);
+    const clientId = dbUser?.id ?? session.user.id;
+    const meetings = await listAssignmentsForClient(clientId);
     return NextResponse.json({ meetings });
   } catch (error) {
     console.error("List meetings error:", error);
@@ -61,8 +64,10 @@ export async function POST(request: Request) {
     const startAt = new Date(startAtStr);
     const timezone = getAgencyTimezone();
     const clientName = name || session.user.name || session.user.email;
+    const dbUser = await findUserByEmail(session.user.email);
+    const clientId = dbUser?.id ?? session.user.id;
 
-    const pendingCount = await countPendingAssignments(session.user.id);
+    const pendingCount = await countPendingAssignments(clientId);
     if (pendingCount >= MAX_PENDING) {
       return NextResponse.json(
         { error: "You already have a pending meeting. Wait until it is closed before scheduling another." },
@@ -91,7 +96,7 @@ export async function POST(request: Request) {
     });
 
     const meeting = await createAssignment({
-      clientId: session.user.id,
+      clientId,
       email: session.user.email,
       name: clientName,
       startAt,
