@@ -168,9 +168,33 @@ function StatCard({
 }
 
 function CtaCard({ disabled }: { disabled: boolean }) {
+  const [isScheduling, setIsScheduling] = React.useState(false);
+
   return (
     <motion.div
     >
+      <style>
+        {`
+          @keyframes client-dashboard-schedule-loader {
+            0% {
+              box-shadow: 10px 0 currentColor, -10px 0 color-mix(in srgb, currentColor 18%, transparent);
+              background: currentColor;
+            }
+            33% {
+              box-shadow: 10px 0 currentColor, -10px 0 color-mix(in srgb, currentColor 18%, transparent);
+              background: color-mix(in srgb, currentColor 18%, transparent);
+            }
+            66% {
+              box-shadow: 10px 0 color-mix(in srgb, currentColor 18%, transparent), -10px 0 currentColor;
+              background: color-mix(in srgb, currentColor 18%, transparent);
+            }
+            100% {
+              box-shadow: 10px 0 color-mix(in srgb, currentColor 18%, transparent), -10px 0 currentColor;
+              background: currentColor;
+            }
+          }
+        `}
+      </style>
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-[#0F0B0A] to-[#1a1412] text-white">
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
         <CardContent className="relative p-8">
@@ -185,17 +209,42 @@ function CtaCard({ disabled }: { disabled: boolean }) {
             {disabled ? (
               <Button
                 disabled
+                variant="ghost"
                 size="lg"
-                className="w-full cursor-not-allowed rounded-full bg-white/20 text-white sm:w-auto"
+                className="w-full cursor-not-allowed rounded-full !bg-white/20 text-white hover:!bg-white/20 sm:w-auto"
               >
                 Pending Meeting Exists
               </Button>
             ) : (
               <Button
+                asChild
+                variant="ghost"
                 size="lg"
-                className="w-full cursor-pointer rounded-full bg-white text-[#0F0B0A] hover:bg-white/90 sm:w-auto"
+                className={cn(
+                  "w-full cursor-pointer rounded-full !bg-white text-[#0F0B0A] hover:!bg-white/90 sm:w-auto",
+                  isScheduling ? "pl-2 pr-5" : "px-5",
+                )}
               >
-                <Link href="/dashboard/schedule">Schedule Discovery Call</Link>
+                <Link
+                  href="/dashboard/schedule"
+                  onClick={() => setIsScheduling(true)}
+                  aria-busy={isScheduling}
+                  className={cn("gap-3", isScheduling ? "pl-2 pr-5" : "px-5")}
+                >
+                  {isScheduling && (
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 shrink-0 rounded-full opacity-90"
+                      style={{
+                        animation:
+                          "client-dashboard-schedule-loader 0.8s infinite linear alternate",
+                      }}
+                    />
+                  )}
+                  <span>
+                    {isScheduling ? "Scheduling..." : "Schedule Discovery Call"}
+                  </span>
+                </Link>
               </Button>
             )}
           </div>

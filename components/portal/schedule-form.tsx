@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Calendar, ChevronDown, Plus, X } from "lucide-react";
-import { Confetti, type ConfettiRef } from "@/components/ui/confetti";
+import confetti from "canvas-confetti";
+import { Calendar, Check, ChevronDown, Plus, X } from "lucide-react";
 import {
   AppointmentScheduler,
   type TimeSlot,
@@ -445,7 +445,6 @@ function BookingFormPanel({
 export function ScheduleForm() {
   const router = useRouter();
   const { data: session } = useSession();
-  const confettiRef = useRef<ConfettiRef>(null);
 
   const [view, setView] = useState<"picker" | "form">("picker");
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
@@ -501,25 +500,55 @@ export function ScheduleForm() {
   }
 
   function handleSuccess() {
+    const duration = 5 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60 };
+    const randomInRange = (min: number, max: number) =>
+      Math.random() * (max - min) + min;
+
     setSuccess(true);
-    confettiRef.current?.fire({ particleCount: 120, spread: 70, origin: { y: 0.5 } });
-    setTimeout(() => router.push("/dashboard"), 2500);
+
+    const interval = window.setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        return;
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+      });
+    }, 250);
+
+    setTimeout(() => router.push("/dashboard"), duration);
   }
 
   return (
     <>
-      <Confetti
-        ref={confettiRef}
-        manualstart={true}
-        style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 50 }}
-      />
-
       {success ? (
-        <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-background p-14 text-center shadow-sm">
-          <div className="text-5xl">🎉</div>
-          <h2 className="text-xl font-semibold leading-none text-foreground">Request sent!</h2>
-          <p className="text-sm text-muted-foreground">
-            We'll confirm your discovery call within 24 hours. Redirecting…
+        <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center rounded-2xl border border-border bg-background p-14 text-center shadow-sm">
+          <div className="mb-5 flex size-16 items-center justify-center rounded-full bg-foreground text-background shadow-[0px_10px_30px_rgba(0,0,0,0.12)]">
+            <Check className="size-8" />
+          </div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Booking request sent
+          </p>
+          <h2 className="text-2xl font-semibold leading-none tracking-tight text-foreground">
+            We received your discovery call request.
+          </h2>
+          <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
+            We&apos;ll confirm your discovery call by email within 24 hours.
+            Redirecting to your dashboard...
           </p>
         </div>
       ) : (
