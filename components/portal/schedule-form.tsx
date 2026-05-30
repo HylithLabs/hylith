@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { format, parseISO } from "date-fns";
 import { Confetti, type ConfettiRef } from "@/components/ui/confetti";
 import {
   AppointmentScheduler,
@@ -20,7 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { isSlotInPast } from "@/lib/availability-client";
 import { MIN_LEAD_HOURS } from "@/lib/availability-constants";
 import {
   formatDateLabel,
@@ -50,18 +48,18 @@ export function ScheduleForm() {
   const [emailWarning, setEmailWarning] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    if (daysError) {
-      setError("Error loading availability. Please refresh the page.");
-    } else if (slotsError) {
-      setError("Error loading time slots. Please try again.");
-    }
-  }, [daysError, slotsError]);
+  const fetchError = daysError
+    ? "Error loading availability. Please refresh the page."
+    : slotsError
+      ? "Error loading time slots. Please try again."
+      : null;
+  const displayError = error ?? fetchError;
 
-  useEffect(() => {
+  function handleDateSelect(dateKey: string) {
+    setSelectedDateKey(dateKey);
     setSelectedTime("");
     setSelectedSlotIso(null);
-  }, [selectedDateKey, slots]);
+  }
 
   useEffect(() => {
     if (success && confettiRef.current) {
@@ -197,7 +195,7 @@ export function ScheduleForm() {
         bookableDateKeys={bookableDays}
         highlightedDateKeys={daysData?.bookableDays ?? []}
         timeSlots={timeSlots}
-        onDateSelect={setSelectedDateKey}
+        onDateSelect={handleDateSelect}
         onTimeSelect={handleTimeSelect}
         brandName="Hylith"
         initialSelectedTime={selectedTime}
@@ -265,9 +263,9 @@ export function ScheduleForm() {
                 />
               </div>
             </div>
-            {error ? (
+            {displayError ? (
               <p className="text-sm text-destructive" role="alert">
-                {error}
+                {displayError}
               </p>
             ) : null}
             {success ? (

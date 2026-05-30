@@ -1,10 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { PORTAL_STALE_TIME_MS } from "@/lib/query/config";
 import { queryKeys } from "@/lib/query/keys";
 import type { MeetingItem } from "@/components/portal/meetings-list";
-
-const POLL_INTERVAL_MS = 2000;
 
 async function fetchClientMeetings(): Promise<MeetingItem[]> {
   const res = await fetch("/api/meetings", { cache: "no-store" });
@@ -28,15 +27,12 @@ async function fetchClientMeetings(): Promise<MeetingItem[]> {
   );
 }
 
-/** Client meetings with 2s polling + Realtime cache updates. */
+/** Client meetings — SSR seed + Supabase Realtime cache patches (no polling). */
 export function useClientMeetings(initialMeetings?: MeetingItem[]) {
   return useQuery({
     queryKey: queryKeys.clientMeetings,
     queryFn: fetchClientMeetings,
-    placeholderData: (previousData) => previousData ?? initialMeetings,
-    staleTime: 0,
-    refetchInterval: POLL_INTERVAL_MS,
-    refetchIntervalInBackground: true,
-    refetchOnMount: "always",
+    initialData: initialMeetings,
+    staleTime: PORTAL_STALE_TIME_MS,
   });
 }

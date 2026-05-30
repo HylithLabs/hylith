@@ -49,7 +49,22 @@ export type MeetingDto = {
   createdAt: string;
 };
 
-export function assignmentToMeetingDto(row: AssignmentRow): MeetingDto {
+export type AssignmentMeetingRow = Pick<
+  AssignmentRow,
+  | "id"
+  | "client_id"
+  | "email"
+  | "name"
+  | "start_at"
+  | "timezone"
+  | "status"
+  | "project_summary"
+  | "company"
+  | "phone"
+  | "created_at"
+>;
+
+export function assignmentToMeetingDto(row: AssignmentMeetingRow): MeetingDto {
   return {
     _id: row.id,
     userId: row.client_id,

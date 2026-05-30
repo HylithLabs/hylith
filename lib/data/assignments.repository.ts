@@ -13,12 +13,15 @@ function admin() {
   return supabase;
 }
 
+const ASSIGNMENT_MEETING_COLUMNS =
+  "id, client_id, email, name, start_at, timezone, status, project_summary, company, phone, created_at";
+
 export async function listAssignmentsForClient(
   clientId: string,
 ): Promise<MeetingDto[]> {
   const { data, error } = await admin()
     .from("assignments")
-    .select("*")
+    .select(ASSIGNMENT_MEETING_COLUMNS)
     .eq("client_id", clientId)
     .order("start_at", { ascending: true });
 
@@ -29,7 +32,7 @@ export async function listAssignmentsForClient(
 export async function listAssignmentsForAdmin(): Promise<MeetingDto[]> {
   const { data, error } = await admin()
     .from("assignments")
-    .select("*")
+    .select(ASSIGNMENT_MEETING_COLUMNS)
     .in("status", ["pending", "confirmed", "closed"])
     .order("start_at", { ascending: false });
 
@@ -43,7 +46,7 @@ export async function getAssignmentForClient(
 ): Promise<MeetingDto | null> {
   const { data, error } = await admin()
     .from("assignments")
-    .select("*")
+    .select(ASSIGNMENT_MEETING_COLUMNS)
     .eq("id", id)
     .eq("client_id", clientId)
     .maybeSingle();

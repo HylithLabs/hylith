@@ -1,10 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { PORTAL_STALE_TIME_MS } from "@/lib/query/config";
 import { queryKeys } from "@/lib/query/keys";
 import type { AdminMeetingItem } from "@/lib/types/admin-meeting";
-
-const POLL_INTERVAL_MS = 2000;
 
 async function fetchAdminMeetings(): Promise<AdminMeetingItem[]> {
   const res = await fetch("/api/admin/meetings");
@@ -13,12 +12,11 @@ async function fetchAdminMeetings(): Promise<AdminMeetingItem[]> {
   return data.meetings ?? [];
 }
 
-/** Admin meetings with 2s polling fallback (React Query). */
+/** Admin meetings — Supabase Realtime keeps cache fresh (no polling). */
 export function useAdminMeetings() {
   return useQuery({
     queryKey: queryKeys.adminMeetings,
     queryFn: fetchAdminMeetings,
-    refetchInterval: POLL_INTERVAL_MS,
-    refetchIntervalInBackground: true,
+    staleTime: PORTAL_STALE_TIME_MS,
   });
 }

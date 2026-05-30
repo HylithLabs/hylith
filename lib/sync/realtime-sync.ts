@@ -139,8 +139,12 @@ function applyClientAssignmentChange(
   );
 }
 
+function invalidateAvailabilityCaches(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: queryKeys.availability });
+}
+
 export type RealtimeSyncOptions = {
-  /** When set, updates client meeting cache (dashboard). */
+  /** When set, patches this user's client meeting cache (dashboard). */
   clientId?: string;
 };
 
@@ -164,9 +168,7 @@ export function subscribeSettingsRealtime(
         void queryClient.invalidateQueries({
           queryKey: queryKeys.availabilitySettings,
         });
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.availability,
-        });
+        invalidateAvailabilityCaches(queryClient);
       },
     )
     .subscribe();
@@ -174,6 +176,32 @@ export function subscribeSettingsRealtime(
   return {
     unsubscribe: () => {
       void supabase.removeChannel(settingsChannel);
+    },
+  };
+}
+
+/** Any assignment change refreshes bookable slots (schedule page). */
+export function subscribeAssignmentAvailabilityRealtime(
+  queryClient: QueryClient,
+  accessToken: string,
+): RealtimeSyncHandle {
+  const supabase = getSupabaseBrowserWithToken(accessToken);
+  void supabase.realtime.setAuth(accessToken);
+
+  const channel = supabase
+    .channel("assignments-availability")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "assignments" },
+      () => {
+        invalidateAvailabilityCaches(queryClient);
+      },
+    )
+    .subscribe();
+
+  return {
+    unsubscribe: () => {
+      void supabase.removeChannel(channel);
     },
   };
 }
@@ -209,9 +237,6 @@ export function subscribeAssignmentsRealtime(
       const typed = payload as RealtimePostgresChangesPayload<AssignmentRow>;
       if (clientId) {
         applyClientAssignmentChange(queryClient, typed, clientId);
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.clientMeetings,
-        });
       } else {
         applyAdminAssignmentChange(queryClient, typed);
       }

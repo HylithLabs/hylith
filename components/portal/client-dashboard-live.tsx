@@ -9,7 +9,7 @@ type ClientDashboardLiveProps = {
   initialMeetings: MeetingItem[];
 };
 
-/** Client dashboard with polling + Supabase Realtime (no full page reload). */
+/** Client dashboard with SSR seed + Supabase Realtime (no polling). */
 export function ClientDashboardLive({
   userName,
   initialMeetings,

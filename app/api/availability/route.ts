@@ -5,6 +5,7 @@ import {
   getAgencyTimezone,
   getBookableDateKeysInRange,
   getOpenDateKeysInRange,
+  getSettings,
   getSlotAvailabilityForDayByKey,
 } from "@/lib/availability";
 
@@ -19,11 +20,18 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
 
-  const bookedStarts = await listBookedStartTimes();
+  const [bookedStarts, settings] = await Promise.all([
+    listBookedStartTimes(),
+    getSettings(),
+  ]);
   const timezone = getAgencyTimezone();
 
   if (dateParam) {
-    const slots = await getSlotAvailabilityForDayByKey(dateParam, bookedStarts);
+    const slots = await getSlotAvailabilityForDayByKey(
+      dateParam,
+      bookedStarts,
+      settings,
+    );
     return NextResponse.json({
       timezone,
       date: dateParam,
@@ -35,8 +43,8 @@ export async function GET(request: Request) {
   }
 
   const [bookableDays, openDays] = await Promise.all([
-    getBookableDateKeysInRange(bookedStarts, 60),
-    getOpenDateKeysInRange(60),
+    getBookableDateKeysInRange(bookedStarts, 60, settings),
+    getOpenDateKeysInRange(60, settings),
   ]);
 
   return NextResponse.json({

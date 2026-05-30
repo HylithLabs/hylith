@@ -53,7 +53,10 @@ export function AdminAvailabilitySettings() {
     error: queryError,
     refetch,
   } = useAdminAvailabilitySettings();
-  const savedSlots = settings?.availableSlots ?? [];
+  const savedSlots = useMemo(
+    () => settings?.availableSlots ?? [],
+    [settings?.availableSlots],
+  );
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +64,9 @@ export function AdminAvailabilitySettings() {
   /** Unsaved picks in the scheduler */
   const [draftSlots, setDraftSlots] = useState<string[]>([]);
   const [draftDirty, setDraftDirty] = useState(false);
-  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(() =>
+    todayDateKey(),
+  );
   /** Re-evaluate past slots as the clock moves (e.g. 1pm becomes disabled after 2pm). */
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -77,22 +82,9 @@ export function AdminAvailabilitySettings() {
     return Array.from(keys).sort();
   }, [savedSlots]);
 
-  useEffect(() => {
-    if (!settings || draftDirty) return;
-    setDraftSlots(settings.availableSlots);
-  }, [settings, draftDirty]);
-
-  useEffect(() => {
-    if (queryError) {
-      setError("Failed to load availability");
-    }
-  }, [queryError]);
-
-  useEffect(() => {
-    if (!loading && !selectedDateKey) {
-      setSelectedDateKey(todayDateKey());
-    }
-  }, [loading, selectedDateKey]);
+  const activeSlots = draftDirty ? draftSlots : savedSlots;
+  const loadErrorMessage = queryError ? "Failed to load availability" : null;
+  const displayError = error ?? loadErrorMessage;
 
   const slotByTime = useMemo(() => {
     if (!selectedDateKey) return new Map<string, string>();
@@ -107,14 +99,14 @@ export function AdminAvailabilitySettings() {
     if (!selectedDateKey) return [];
     const now = new Date(nowMs);
     const times: string[] = [];
-    for (const iso of draftSlots) {
+    for (const iso of activeSlots) {
       if (formatSlotDateKey(iso) !== selectedDateKey) continue;
       if (isSlotInPast(iso, now)) continue;
       const time = formatSlotTimeKey(iso);
       if (slotByTime.has(time)) times.push(time);
     }
     return times;
-  }, [draftSlots, selectedDateKey, slotByTime, nowMs]);
+  }, [activeSlots, selectedDateKey, slotByTime, nowMs]);
 
   const timeSlots: TimeSlot[] = useMemo(() => {
     if (!selectedDateKey) return [];
@@ -128,10 +120,11 @@ export function AdminAvailabilitySettings() {
   }, [selectedDateKey, slotByTime, nowMs]);
 
   const hasUnsavedChanges = useMemo(() => {
-    if (draftSlots.length !== savedSlots.length) return true;
+    if (!draftDirty) return false;
+    if (activeSlots.length !== savedSlots.length) return true;
     const savedSet = new Set(savedSlots);
-    return draftSlots.some((s) => !savedSet.has(s));
-  }, [draftSlots, savedSlots]);
+    return activeSlots.some((s) => !savedSet.has(s));
+  }, [activeSlots, draftDirty, savedSlots]);
 
   const groupedSavedSlots = useMemo(() => {
     const sorted = [...savedSlots].sort(
@@ -153,9 +146,12 @@ export function AdminAvailabilitySettings() {
 
     setDraftDirty(true);
     setDraftSlots((prev) => {
-      const exists = prev.some((s) => sameSlot(s, iso));
-      if (exists) return prev.filter((s) => !sameSlot(s, iso));
-      return [...prev, iso].sort(
+      const current = draftDirty ? prev : savedSlots;
+      const exists = current.some((s) => sameSlot(s, iso));
+      if (exists) {
+        return current.filter((s) => !sameSlot(s, iso));
+      }
+      return [...current, iso].sort(
         (a, b) => new Date(a).getTime() - new Date(b).getTime(),
       );
     });
@@ -169,7 +165,7 @@ export function AdminAvailabilitySettings() {
     );
     setDraftDirty(true);
     setDraftSlots((prev) => {
-      const merged = [...prev];
+      const merged = [...(draftDirty ? prev : savedSlots)];
       for (const iso of candidates) {
         if (!merged.some((s) => sameSlot(s, iso))) merged.push(iso);
       }
@@ -180,9 +176,10 @@ export function AdminAvailabilitySettings() {
   function closeAllTimesForSelectedDay() {
     if (!selectedDateKey) return;
     setDraftDirty(true);
-    setDraftSlots((prev) =>
-      prev.filter((s) => formatSlotDateKey(s) !== selectedDateKey),
-    );
+    setDraftSlots((prev) => {
+      const current = draftDirty ? prev : savedSlots;
+      return current.filter((s) => formatSlotDateKey(s) !== selectedDateKey);
+    });
   }
 
   async function persistSlots(slots: string[]) {
@@ -209,7 +206,7 @@ export function AdminAvailabilitySettings() {
     setError(null);
     setSuccess(false);
     try {
-      const saved = await persistSlots(draftSlots);
+      const saved = await persistSlots(activeSlots);
       setDraftSlots(saved);
       setDraftDirty(false);
       await queryClient.invalidateQueries({
@@ -331,7 +328,7 @@ export function AdminAvailabilitySettings() {
           <div className="flex flex-wrap items-center gap-4">
             <Button
               onClick={handleSave}
-              disabled={saving || (!hasUnsavedChanges && draftSlots.length === 0)}
+              disabled={saving || (!hasUnsavedChanges && activeSlots.length === 0)}
             >
               {saving ? (
                 <>
@@ -348,14 +345,14 @@ export function AdminAvailabilitySettings() {
                 Saved — clients can now book these times
               </div>
             ) : null}
-            {error ? (
+            {displayError ? (
               <div className="flex items-center gap-2 text-sm text-destructive">
                 <AlertCircle className="size-4" />
-                {error}
+                {displayError}
               </div>
             ) : null}
             <p className="text-sm text-muted-foreground">
-              {draftSlots.length} in draft
+              {activeSlots.length} in draft
               {hasUnsavedChanges ? " · unsaved" : ""}
               {savedSlots.length > 0
                 ? ` · ${savedSlots.length} saved for clients`

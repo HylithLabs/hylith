@@ -1,3 +1,4 @@
+import { cache } from "react";
 import {
   AGENCY_TIMEZONE,
   SLOT_DURATION_MINUTES,
@@ -46,17 +47,18 @@ function rowToPortalSettings(data: {
   };
 }
 
-export async function getPortalSettings(): Promise<PortalSettings> {
+/** Deduped within a single server request (availability API, etc.). */
+export const getPortalSettings = cache(async (): Promise<PortalSettings> => {
   const { data, error } = await admin()
     .from("settings")
-    .select("*")
+    .select("available_slots, slot_duration_minutes, timezone")
     .eq("id", "default")
     .maybeSingle();
 
   if (error) throw error;
   if (!data) return DEFAULT_SETTINGS;
   return rowToPortalSettings(data);
-}
+});
 
 export async function updatePortalSettings(
   patch: Partial<PortalSettings>,

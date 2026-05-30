@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { PortalShell } from "@/components/portal/portal-shell";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -11,6 +10,8 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <PortalShell>{children}</PortalShell>
+    <div className="portal-shell min-h-screen font-[family-name:var(--font-dm-sans)] text-foreground antialiased">
+      {children}
+    </div>
   );
 }

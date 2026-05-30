@@ -76,16 +76,18 @@ export function AppointmentScheduler({
   );
   const [selectedTime, setSelectedTime] = useState(initialSelectedTime ?? "");
   const [timeFormat, setTimeFormat] = useState<"12h" | "24h">("12h");
+  const [prevInitialDateKey, setPrevInitialDateKey] = useState(
+    initialSelectedDateKey,
+  );
+
+  if (initialSelectedDateKey !== prevInitialDateKey) {
+    setPrevInitialDateKey(initialSelectedDateKey);
+    setSelectedDateKey(initialSelectedDateKey ?? null);
+  }
 
   useEffect(() => {
     onMonthChange?.(currentMonth, currentYear);
   }, [currentMonth, currentYear, onMonthChange]);
-
-  useEffect(() => {
-    if (initialSelectedDateKey) {
-      setSelectedDateKey(initialSelectedDateKey);
-    }
-  }, [initialSelectedDateKey]);
 
   const monthNames = [
     "January",

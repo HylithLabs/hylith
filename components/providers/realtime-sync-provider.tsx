@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { queryKeys } from "@/lib/query/keys";
 import {
+  subscribeAssignmentAvailabilityRealtime,
   subscribeAssignmentsRealtime,
   subscribeSettingsRealtime,
   type RealtimeSyncHandle,
@@ -24,8 +25,10 @@ type RealtimeSyncProviderProps = {
   clientId?: string;
   /** Listen to `settings` table (availability). */
   syncSettings?: boolean;
-  /** Listen to `assignments` table. Default true. */
+  /** Listen to `assignments` table for meeting lists. Default true. */
   subscribeAssignments?: boolean;
+  /** Invalidate availability caches when any assignment changes (schedule page). */
+  syncAvailabilityFromAssignments?: boolean;
 };
 
 /** Subscribes to Supabase Realtime and keeps React Query cache in sync. */
@@ -34,12 +37,14 @@ export function RealtimeSyncProvider({
   clientId,
   syncSettings = false,
   subscribeAssignments = true,
+  syncAvailabilityFromAssignments = false,
 }: RealtimeSyncProviderProps) {
   const queryClient = useQueryClient();
   const { data: accessToken } = useQuery({
     queryKey: queryKeys.supabaseToken,
     queryFn: fetchSupabaseToken,
     staleTime: 45 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     retry: false,
   });
 
@@ -57,6 +62,12 @@ export function RealtimeSyncProvider({
       handles.push(subscribeSettingsRealtime(queryClient, accessToken));
     }
 
+    if (syncAvailabilityFromAssignments) {
+      handles.push(
+        subscribeAssignmentAvailabilityRealtime(queryClient, accessToken),
+      );
+    }
+
     return () => {
       for (const handle of handles) {
         handle.unsubscribe();
@@ -68,6 +79,7 @@ export function RealtimeSyncProvider({
     queryClient,
     syncSettings,
     subscribeAssignments,
+    syncAvailabilityFromAssignments,
   ]);
 
   return children;

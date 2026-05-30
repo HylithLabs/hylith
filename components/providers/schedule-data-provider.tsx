@@ -8,7 +8,11 @@ import { RealtimeSyncProvider } from "@/components/providers/realtime-sync-provi
 export function ScheduleDataProvider({ children }: { children: ReactNode }) {
   return (
     <QueryProvider>
-      <RealtimeSyncProvider syncSettings subscribeAssignments={false}>
+      <RealtimeSyncProvider
+        syncSettings
+        subscribeAssignments={false}
+        syncAvailabilityFromAssignments
+      >
         {children}
       </RealtimeSyncProvider>
     </QueryProvider>

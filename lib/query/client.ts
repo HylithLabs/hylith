@@ -1,13 +1,16 @@
 "use client";
 
 import { QueryClient } from "@tanstack/react-query";
+import { PORTAL_GC_TIME_MS, PORTAL_STALE_TIME_MS } from "@/lib/query/config";
 
 function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 1000,
-        refetchOnWindowFocus: true,
+        staleTime: PORTAL_STALE_TIME_MS,
+        gcTime: PORTAL_GC_TIME_MS,
+        refetchOnWindowFocus: false,
+        retry: 1,
       },
     },
   });

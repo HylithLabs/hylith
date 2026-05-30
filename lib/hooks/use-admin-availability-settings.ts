@@ -1,9 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { PORTAL_STALE_TIME_MS } from "@/lib/query/config";
 import { queryKeys } from "@/lib/query/keys";
-
-const POLL_INTERVAL_MS = 2000;
 
 export type AvailabilitySettingsDto = {
   timezone: string;
@@ -20,11 +19,11 @@ async function fetchAvailabilitySettings(): Promise<AvailabilitySettingsDto> {
   return data.settings;
 }
 
+/** Admin availability settings — Supabase Realtime on `settings` table (no polling). */
 export function useAdminAvailabilitySettings() {
   return useQuery({
     queryKey: queryKeys.availabilitySettings,
     queryFn: fetchAvailabilitySettings,
-    refetchInterval: POLL_INTERVAL_MS,
-    refetchIntervalInBackground: true,
+    staleTime: PORTAL_STALE_TIME_MS,
   });
 }

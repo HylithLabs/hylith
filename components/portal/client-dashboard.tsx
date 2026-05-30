@@ -4,33 +4,24 @@ import * as React from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { motion, useInView, useSpring } from "motion/react";
 import {
-  animate,
-  motion,
-  useMotionValue,
-  useTransform,
-} from "motion/react";
-import {
-  Calendar,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Video,
   AlertCircle,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { MeetingItem } from "@/components/portal/meetings-list";
-
-type DisplayStatus = "pending" | "completed" | "cancelled" | "confirmed";
 
 interface ClientDashboardProps {
   userName: string;
@@ -38,61 +29,188 @@ interface ClientDashboardProps {
   className?: string;
 }
 
-function mapDisplayStatus(status: MeetingItem["status"]): DisplayStatus {
-  if (status === "closed") return "completed";
-  if (status === "confirmed") return "confirmed";
-  if (status === "cancelled") return "cancelled";
-  return "pending";
-}
-
 function AnimatedNumber({ value }: { value: number }) {
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, (latest) => Math.round(latest));
+  const ref = React.useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true });
+  const spring = useSpring(0, { damping: 30, stiffness: 100, mass: 1 });
 
   React.useEffect(() => {
-    const controls = animate(count, value, {
-      duration: 1.2,
-      ease: "easeOut",
+    if (isInView) {
+      spring.set(value);
+    }
+  }, [spring, isInView, value]);
+
+  React.useEffect(() => {
+    const unsubscribe = spring.on("change", (latest) => {
+      if (ref.current) {
+        ref.current.textContent = Math.floor(latest).toString();
+      }
     });
-    return controls.stop;
-  }, [value, count]);
+    return () => unsubscribe();
+  }, [spring]);
 
-  return <motion.span>{rounded}</motion.span>;
+  return <span ref={ref}>0</span>;
 }
 
-function statusBadgeClass(status: DisplayStatus) {
-  switch (status) {
-    case "pending":
-      return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20";
-    case "completed":
-      return "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20";
-    case "confirmed":
-      return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20";
-    case "cancelled":
-      return "bg-destructive/10 text-destructive border-destructive/20";
-    default:
-      return "";
-  }
+function StatusBadge({ status }: { status: MeetingItem["status"] }) {
+  const statusConfig = {
+    pending: {
+      icon: AlertCircle,
+      variant: "secondary" as const,
+      label: "Pending",
+    },
+    confirmed: {
+      icon: CheckCircle2,
+      variant: "default" as const,
+      label: "Confirmed",
+    },
+    closed: {
+      icon: CheckCircle2,
+      variant: "outline" as const,
+      label: "Closed",
+    },
+    cancelled: {
+      icon: XCircle,
+      variant: "destructive" as const,
+      label: "Cancelled",
+    },
+  };
+
+  const config = statusConfig[status];
+  const Icon = config.icon;
+
+  return (
+    <Badge variant={config.variant} className="gap-1 capitalize">
+      <Icon className="size-3" />
+      {config.label}
+    </Badge>
+  );
 }
 
-function statusLabel(status: DisplayStatus) {
-  if (status === "completed") return "closed";
-  return status;
+function MeetingCard({
+  meeting,
+  index,
+}: {
+  meeting: MeetingItem;
+  index: number;
+}) {
+  const zonedDate = toZonedTime(new Date(meeting.startAt), meeting.timezone);
+  const formattedDate = format(zonedDate, "MMM dd, yyyy");
+  const formattedTime = format(zonedDate, "hh:mm a");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.3 }}
+    >
+      <Card className="border-border transition-shadow duration-200 hover:shadow-md">
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h3 className="mb-2 text-lg font-semibold text-foreground">
+                  {meeting.projectSummary}
+                </h3>
+                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="size-4 shrink-0" />
+                    <span>{formattedDate}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="size-4 shrink-0" />
+                    <span>{formattedTime}</span>
+                  </div>
+                </div>
+              </div>
+              <StatusBadge status={meeting.status} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 }
 
-function StatusIcon({ status }: { status: DisplayStatus }) {
-  switch (status) {
-    case "pending":
-      return <Clock className="size-3" />;
-    case "completed":
-      return <CheckCircle2 className="size-3" />;
-    case "confirmed":
-      return <CheckCircle2 className="size-3" />;
-    case "cancelled":
-      return <XCircle className="size-3" />;
-    default:
-      return null;
-  }
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  delay = 0,
+}: {
+  title: string;
+  value: number;
+  icon: React.ElementType;
+  delay?: number;
+}) {
+  const cardRef = React.useRef<HTMLDivElement>(null);
+
+  return (
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay, duration: 0.4 }}
+      whileHover={{ scale: 1.03, y: -5 }}
+    >
+      <Card className="border-border bg-[#EEEEE8]">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            {title}
+          </CardTitle>
+          <Icon className="size-5 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold tracking-tight text-foreground">
+            <AnimatedNumber value={value} />
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+function CtaCard({ disabled }: { disabled: boolean }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3, duration: 0.4 }}
+      whileHover={disabled ? undefined : { scale: 1.02 }}
+    >
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-[#0F0B0A] to-[#1a1412] text-white">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+        <CardContent className="relative p-8">
+          <div className="flex flex-col gap-4">
+            <div>
+              <h3 className="mb-2 text-2xl font-bold">Ready to get started?</h3>
+              <p className="text-zinc-300">
+                Schedule a discovery call to discuss your project needs and
+                explore how we can help bring your vision to life.
+              </p>
+            </div>
+            {disabled ? (
+              <Button
+                disabled
+                size="lg"
+                className="w-full rounded-full bg-white/20 text-white sm:w-auto"
+              >
+                Pending Meeting Exists
+              </Button>
+            ) : (
+              <Button
+                asChild
+                size="lg"
+                className="w-full rounded-full bg-white text-[#0F0B0A] hover:bg-zinc-100 sm:w-auto"
+              >
+                <Link href="/dashboard/schedule">Schedule Discovery Call</Link>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 }
 
 export function ClientDashboard({
@@ -105,179 +223,71 @@ export function ClientDashboard({
   const hasPendingMeeting = pendingCount > 0;
 
   const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      y: 0,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.1 },
     },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   return (
     <motion.div
-      className={cn("mx-auto w-full max-w-4xl space-y-6", className)}
+      className={cn("mx-auto w-full space-y-8", className)}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div variants={itemVariants}>
-        <h1 className="font-[family-name:var(--font-dm-sans)] text-3xl font-bold tracking-[-0.03em] text-foreground sm:text-4xl">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="font-[family-name:var(--font-dm-sans)] text-4xl font-bold tracking-tight text-foreground md:text-5xl">
           Welcome back, {userName}
         </h1>
-        <p className="mt-2 text-muted-foreground">
-          Manage your discovery calls and track your project progress with Hylith.
+        <p className="mt-2 text-lg text-muted-foreground">
+          Here&apos;s an overview of your meetings and project status
         </p>
       </motion.div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <motion.div variants={itemVariants} whileHover={{ scale: 1.02, y: -2 }}>
-          <Card className="border-border bg-card/80 backdrop-blur-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Pending Meetings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">
-                <AnimatedNumber value={pendingCount} />
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Awaiting your discovery call
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants} whileHover={{ scale: 1.02, y: -2 }}>
-          <Card className="border-border bg-card/80 backdrop-blur-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Closed Meetings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">
-                <AnimatedNumber value={closedCount} />
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Completed discovery calls
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+        <StatCard
+          title="Pending Meetings"
+          value={pendingCount}
+          icon={AlertCircle}
+          delay={0.1}
+        />
+        <StatCard
+          title="Closed Meetings"
+          value={closedCount}
+          icon={CheckCircle2}
+          delay={0.2}
+        />
       </div>
 
-      <motion.div variants={itemVariants}>
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-              <div className="flex items-start gap-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <Video className="size-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="mb-1 font-semibold text-foreground">
-                    Schedule a Discovery Call
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {hasPendingMeeting
-                      ? "You have a pending meeting. You can schedule another once it is marked closed."
-                      : "Book a time to discuss your system, roadmap, and how Hylith can help."}
-                  </p>
-                </div>
-              </div>
-              {hasPendingMeeting ? (
-                <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-2 text-sm text-muted-foreground">
-                  <AlertCircle className="size-4 shrink-0" />
-                  Pending meeting active
-                </div>
-              ) : (
-                <Button asChild size="lg" className="shrink-0 rounded-full px-6">
-                  <Link href="/dashboard/schedule">Schedule Call</Link>
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <CtaCard disabled={hasPendingMeeting} />
 
-      <motion.div variants={itemVariants}>
-        <Card className="border-border bg-card/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="font-[family-name:var(--font-dm-sans)] tracking-[-0.02em]">
-              Your Meetings
-            </CardTitle>
-            <CardDescription>
-              View your discovery call history and upcoming sessions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {meetings.length === 0 ? (
-              <div className="py-10 text-center">
-                <p className="text-muted-foreground">No meetings scheduled yet</p>
-                <Button asChild className="mt-4 rounded-full">
-                  <Link href="/dashboard/schedule">Schedule your first call</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {meetings.map((meeting, index) => {
-                  const zoned = toZonedTime(
-                    new Date(meeting.startAt),
-                    meeting.timezone,
-                  );
-                  const displayStatus = mapDisplayStatus(meeting.status);
-
-                  return (
-                    <motion.div
-                      key={meeting._id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 + index * 0.08 }}
-                      whileHover={{ scale: 1.01, x: 4 }}
-                    >
-                      <Card className="border-border p-4 transition-shadow hover:shadow-md">
-                        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                          <div className="flex-1 space-y-2">
-                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="size-4" />
-                              <span>{format(zoned, "MMM d, yyyy")}</span>
-                              <span>·</span>
-                              <Clock className="size-4" />
-                              <span>{format(zoned, "h:mm a")}</span>
-                            </div>
-                            <p className="line-clamp-2 font-medium text-foreground">
-                              {meeting.projectSummary}
-                            </p>
-                          </div>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "flex w-fit items-center gap-1 capitalize",
-                              statusBadgeClass(displayStatus),
-                            )}
-                          >
-                            <StatusIcon status={displayStatus} />
-                            {statusLabel(displayStatus)}
-                          </Badge>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
+      <div className="space-y-4">
+        <h2 className="font-[family-name:var(--font-dm-sans)] text-2xl font-bold tracking-[-0.02em] text-foreground">
+          Your Meetings
+        </h2>
+        {meetings.length === 0 ? (
+          <Card className="border-border">
+            <CardContent className="p-8 text-center text-muted-foreground">
+              <p>No meetings scheduled yet</p>
+              <Button asChild className="mt-4 rounded-full">
+                <Link href="/dashboard/schedule">Schedule your first call</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {meetings.map((meeting, index) => (
+              <MeetingCard key={meeting._id} meeting={meeting} index={index} />
+            ))}
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }

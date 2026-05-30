@@ -1,9 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { PORTAL_STALE_TIME_MS } from "@/lib/query/config";
 import { queryKeys } from "@/lib/query/keys";
-
-const POLL_INTERVAL_MS = 2000;
 
 async function fetchBookableDays(): Promise<{
   bookableDays: string[];
@@ -43,21 +42,21 @@ async function fetchSlotsForDay(dateKey: string): Promise<{
   };
 }
 
+/** Bookable calendar days — invalidated by settings/assignments Realtime. */
 export function useBookableDays() {
   return useQuery({
     queryKey: queryKeys.availabilityDays,
     queryFn: fetchBookableDays,
-    refetchInterval: POLL_INTERVAL_MS,
-    refetchIntervalInBackground: true,
+    staleTime: PORTAL_STALE_TIME_MS,
   });
 }
 
+/** Slots for one day — invalidated when assignments or settings change. */
 export function useSlotsForDay(dateKey: string | null) {
   return useQuery({
     queryKey: queryKeys.availabilitySlots(dateKey ?? ""),
     queryFn: () => fetchSlotsForDay(dateKey!),
     enabled: Boolean(dateKey),
-    refetchInterval: POLL_INTERVAL_MS,
-    refetchIntervalInBackground: true,
+    staleTime: PORTAL_STALE_TIME_MS,
   });
 }

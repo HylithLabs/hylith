@@ -20,7 +20,13 @@ export {
 } from "./availability-constants";
 export { getFutureDateKeys, todayDateKey } from "./availability-utils";
 
-export async function getSettings() {
+export type AvailabilitySettings = {
+  availableSlots: string[];
+  slotDurationMinutes: number;
+  timezone: string;
+};
+
+export async function getSettings(): Promise<AvailabilitySettings> {
   const settings = await getPortalSettings();
   return {
     availableSlots: settings.availableSlots,
@@ -98,10 +104,11 @@ function bookableSlotsForDateKey(
 export async function getSlotsForDayByKey(
   dateKey: string,
   bookedStarts: Date[] = [],
+  settings?: AvailabilitySettings,
 ): Promise<Date[]> {
-  const settings = await getSettings();
+  const resolved = settings ?? (await getSettings());
   return bookableSlotsForDateKey(
-    toDateArray(settings.availableSlots),
+    toDateArray(resolved.availableSlots),
     dateKey,
     bookedStarts,
   );
@@ -111,10 +118,11 @@ export async function getSlotsForDayByKey(
 export async function getSlotAvailabilityForDayByKey(
   dateKey: string,
   bookedStarts: Date[] = [],
+  settings?: AvailabilitySettings,
 ): Promise<SlotAvailability[]> {
-  const settings = await getSettings();
+  const resolved = settings ?? (await getSettings());
   const nowUtc = new Date();
-  const openSlots = toDateArray(settings.availableSlots);
+  const openSlots = toDateArray(resolved.availableSlots);
 
   return openSlotsForDateKey(openSlots, dateKey, nowUtc)
     .sort((a, b) => a.getTime() - b.getTime())
@@ -128,9 +136,10 @@ export async function getSlotAvailabilityForDayByKey(
 export async function getBookableDateKeysInRange(
   bookedStarts: Date[] = [],
   daysAhead = 60,
+  settings?: AvailabilitySettings,
 ): Promise<string[]> {
-  const settings = await getSettings();
-  const openSlots = toDateArray(settings.availableSlots);
+  const resolved = settings ?? (await getSettings());
+  const openSlots = toDateArray(resolved.availableSlots);
   const keys: string[] = [];
   const start = fromZonedTime(`${todayDateKey()}T00:00:00`, AGENCY_TIMEZONE);
 
@@ -149,9 +158,10 @@ export async function getBookableDateKeysInRange(
 /** yyyy-MM-dd dates with any future admin-open slot (shown on client calendar). */
 export async function getOpenDateKeysInRange(
   daysAhead = 60,
+  settings?: AvailabilitySettings,
 ): Promise<string[]> {
-  const settings = await getSettings();
-  const openSlots = toDateArray(settings.availableSlots);
+  const resolved = settings ?? (await getSettings());
+  const openSlots = toDateArray(resolved.availableSlots);
   const nowUtc = new Date();
   const keys: string[] = [];
   const start = fromZonedTime(`${todayDateKey()}T00:00:00`, AGENCY_TIMEZONE);

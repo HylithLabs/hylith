@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Mail, Plus, Trash2 } from "lucide-react";
+import { STATIC_ADMIN_STALE_TIME_MS } from "@/lib/query/config";
 import { queryKeys } from "@/lib/query/keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +44,7 @@ export function AdminWhomToSend() {
   const { data: recipients = [], isLoading, error } = useQuery({
     queryKey: queryKeys.notificationRecipients,
     queryFn: fetchRecipients,
-    refetchInterval: 2000,
+    staleTime: STATIC_ADMIN_STALE_TIME_MS,
   });
 
   const addMutation = useMutation({
