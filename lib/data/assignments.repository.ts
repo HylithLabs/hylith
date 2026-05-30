@@ -95,7 +95,7 @@ export async function createAssignment(input: {
   company: string;
   phone: string;
 }): Promise<MeetingDto> {
-  await admin().from("clients").upsert(
+  const { error: syncError } = await admin().from("clients").upsert(
     {
       id: input.clientId,
       email: input.email.toLowerCase(),
@@ -104,6 +104,7 @@ export async function createAssignment(input: {
     },
     { onConflict: "id" },
   );
+  if (syncError) throw syncError;
 
   const { data, error } = await admin()
     .from("assignments")

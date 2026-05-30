@@ -1,8 +1,5 @@
-import { getMailFrom, getSmtpTransporter } from "@/lib/mail";
+import { sendViaBrevo } from "@/lib/brevo";
 import { logEmailAttempt } from "@/lib/data/email-logs.repository";
-
-const MAX_ATTEMPTS = 3;
-const RETRY_DELAY_MS = 1500;
 
 export type EmailPayload = {
   subject: string;
@@ -10,83 +7,52 @@ export type EmailPayload = {
   html?: string;
 };
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function sendWithRetry(
-  to: string,
-  payload: EmailPayload,
-): Promise<{ success: boolean; error?: string }> {
-  const transporter = getSmtpTransporter();
-  if (!transporter) {
-    return { success: false, error: "SMTP not configured" };
-  }
-
-  const from = getMailFrom();
-  let lastError: string | undefined;
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    try {
-      await transporter.sendMail({
-        from,
-        to,
-        subject: payload.subject,
-        text: payload.text,
-        html: payload.html,
-      });
-      await logEmailAttempt({
-        recipient: to,
-        subject: payload.subject,
-        success: true,
-        metadata: { attempt },
-      });
-      return { success: true };
-    } catch (err) {
-      lastError = err instanceof Error ? err.message : "Send failed";
-      if (attempt < MAX_ATTEMPTS) await sleep(RETRY_DELAY_MS * attempt);
-    }
-  }
-
-  await logEmailAttempt({
-    recipient: to,
-    subject: payload.subject,
-    success: false,
-    errorMessage: lastError,
-    metadata: { attempts: MAX_ATTEMPTS },
-  });
-
-  return { success: false, error: lastError };
-}
-
 export async function sendEmail(
   to: string,
   subject: string,
   body: string,
+  html?: string,
 ): Promise<{ success: boolean; error?: string }> {
-  return sendWithRetry(to, { subject, text: body });
+  const result = await sendViaBrevo({ to: [to], subject, text: body, html });
+
+  await logEmailAttempt({
+    recipient: to,
+    subject,
+    success: result.success,
+    errorMessage: result.error,
+    metadata: { provider: "brevo" },
+  });
+
+  return result;
 }
 
 export async function sendBulkEmail(
   recipients: string[],
   payload: EmailPayload,
 ): Promise<{ sent: number; failed: string[]; skipped: boolean }> {
-  const unique = [...new Set(recipients.map((e) => e.trim().toLowerCase()))].filter(
-    Boolean,
-  );
+  const unique = [
+    ...new Set(recipients.map((e) => e.trim().toLowerCase()).filter(Boolean)),
+  ];
 
-  if (unique.length === 0) {
-    return { sent: 0, failed: [], skipped: true };
-  }
+  if (unique.length === 0) return { sent: 0, failed: [], skipped: true };
 
-  const failed: string[] = [];
-  let sent = 0;
+  // Send one API call with all recipients (Brevo supports up to 50 `to` per call)
+  const result = await sendViaBrevo({
+    to: unique,
+    subject: payload.subject,
+    text: payload.text,
+    html: payload.html,
+  });
 
-  for (const to of unique) {
-    const result = await sendWithRetry(to, payload);
-    if (result.success) sent += 1;
-    else failed.push(to);
-  }
+  await logEmailAttempt({
+    recipient: unique.join(", "),
+    subject: payload.subject,
+    success: result.success,
+    errorMessage: result.error,
+    metadata: { provider: "brevo", count: unique.length },
+  });
 
-  return { sent, failed, skipped: false };
+  return result.success
+    ? { sent: unique.length, failed: [], skipped: false }
+    : { sent: 0, failed: unique, skipped: false };
 }

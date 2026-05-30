@@ -25,7 +25,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Calendar, FileText, User, Search, Loader2 } from "lucide-react";
+import { Mail, Calendar, FileText, User, Search, Loader2, Globe, Banknote, Clock3, Users } from "lucide-react";
+import { parseProjectSummary, projectLabel } from "@/lib/meeting-display";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminAvailabilitySettings } from "@/components/portal/AdminAvailabilitySettings";
 import { AdminScheduleView } from "@/components/portal/AdminScheduleView";
@@ -132,6 +133,26 @@ function statusBadgeClass(status: AdminMeetingItem["status"]) {
     return "bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20";
   }
   return "";
+}
+
+function DetailRow({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        {icon}
+        {label}
+      </div>
+      <div className="text-sm text-foreground">{children}</div>
+    </div>
+  );
 }
 
 export function AdminMeetingsDashboard() {
@@ -311,8 +332,8 @@ export function AdminMeetingsDashboard() {
                             <TableCell>
                               {format(zoned, "MMM d, yyyy · h:mm a")}
                             </TableCell>
-                            <TableCell className="max-w-md truncate">
-                              {meeting.projectSummary}
+                            <TableCell className="max-w-md truncate text-sm">
+                              {projectLabel(meeting.projectSummary)}
                             </TableCell>
                             <TableCell className="text-right">
                               <Badge
@@ -373,81 +394,109 @@ export function AdminMeetingsDashboard() {
             </div>
           ) : null}
 
-          {selectedMeeting ? (
-            <div className="space-y-6 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <User className="h-4 w-4" />
-                    <span className="font-medium">Client Name</span>
-                  </div>
-                  <p className="font-medium text-foreground">{selectedMeeting.name}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    <span className="font-medium">Email</span>
-                  </div>
-                  <p className="font-mono text-sm text-foreground">
-                    {selectedMeeting.email}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span className="font-medium">Meeting Date</span>
-                  </div>
-                  <p className="text-foreground">
+          {selectedMeeting ? (() => {
+            const proj = parseProjectSummary(selectedMeeting.projectSummary);
+            return (
+              <div className="space-y-5 py-2">
+                {/* Identity + date row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <DetailRow icon={<User className="h-4 w-4" />} label="Client">
+                    {selectedMeeting.name}
+                  </DetailRow>
+                  <DetailRow icon={<Mail className="h-4 w-4" />} label="Email">
+                    <span className="font-mono text-sm">{selectedMeeting.email}</span>
+                  </DetailRow>
+                  <DetailRow icon={<Calendar className="h-4 w-4" />} label="Meeting">
                     {format(
-                      toZonedTime(
-                        new Date(selectedMeeting.startAt),
-                        selectedMeeting.timezone,
-                      ),
+                      toZonedTime(new Date(selectedMeeting.startAt), selectedMeeting.timezone),
                       "EEEE, MMMM d, yyyy · h:mm a",
                     )}
+                  </DetailRow>
+                  <DetailRow icon={<FileText className="h-4 w-4" />} label="Status">
+                    <Badge className={cn("capitalize", statusBadgeClass(selectedMeeting.status))}>
+                      {selectedMeeting.status}
+                    </Badge>
+                  </DetailRow>
+                </div>
+
+                <hr className="border-border" />
+
+                {/* Company info */}
+                <div className="grid grid-cols-2 gap-4">
+                  {selectedMeeting.company && (
+                    <DetailRow icon={<User className="h-4 w-4" />} label="Company">
+                      {selectedMeeting.company}
+                    </DetailRow>
+                  )}
+                  {(proj.companyUrl || selectedMeeting.phone) && (
+                    <DetailRow icon={<Globe className="h-4 w-4" />} label="Company URL">
+                      <a
+                        href={proj.companyUrl ?? selectedMeeting.phone ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline dark:text-blue-400 break-all"
+                      >
+                        {proj.companyUrl ?? selectedMeeting.phone}
+                      </a>
+                    </DetailRow>
+                  )}
+                  {proj.budget && (
+                    <DetailRow icon={<Banknote className="h-4 w-4" />} label="Budget">
+                      {proj.budget}
+                    </DetailRow>
+                  )}
+                  {proj.deadline && (
+                    <DetailRow icon={<Clock3 className="h-4 w-4" />} label="Deadline">
+                      {proj.deadline}
+                    </DetailRow>
+                  )}
+                  {proj.projectStatus && (
+                    <DetailRow icon={<FileText className="h-4 w-4" />} label="Project Status">
+                      {proj.projectStatus}
+                    </DetailRow>
+                  )}
+                </div>
+
+                {/* Services */}
+                {proj.services && proj.services.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Services needed</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {proj.services.map((s) => (
+                        <span key={s} className="rounded-md bg-muted px-2.5 py-1 text-sm text-foreground">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Project description</p>
+                  <p className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
+                    {proj.description}
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <FileText className="h-4 w-4" />
-                    <span className="font-medium">Status</span>
+                {/* Guests */}
+                {proj.guests && proj.guests.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <Users className="inline h-3.5 w-3.5 mr-1" />Guests
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {proj.guests.map((g) => (
+                        <span key={g} className="rounded-md bg-muted px-2.5 py-1 text-sm font-mono text-foreground">
+                          {g}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <Badge
-                    className={cn(
-                      "capitalize",
-                      statusBadgeClass(selectedMeeting.status),
-                    )}
-                  >
-                    {selectedMeeting.status}
-                  </Badge>
-                </div>
+                )}
               </div>
-
-              {selectedMeeting.company ? (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">Company</p>
-                  <p className="text-foreground">{selectedMeeting.company}</p>
-                </div>
-              ) : null}
-
-              {selectedMeeting.phone ? (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                  <p className="font-mono text-foreground">{selectedMeeting.phone}</p>
-                </div>
-              ) : null}
-
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Project Summary
-                </p>
-                <p className="text-foreground">{selectedMeeting.projectSummary}</p>
-              </div>
-            </div>
-          ) : null}
+            );
+          })() : null}
 
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>

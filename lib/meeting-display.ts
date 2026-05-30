@@ -1,20 +1,39 @@
-/** Human-readable project line for dashboard (hides accidental error/autofill junk). */
-export function formatMeetingSummary(summary: string): string {
-  const trimmed = summary.trim();
-  if (!trimmed) return "Discovery call request";
+export type ParsedProject = {
+  description: string;
+  companyUrl?: string;
+  services?: string[];
+  budget?: string;
+  projectStatus?: string;
+  deadline?: string;
+  guests?: string[];
+  /** true when the summary was valid JSON from the new form */
+  isStructured: boolean;
+};
 
-  const lower = trimmed.toLowerCase();
-  if (
-    lower.includes("failed to create meeting") ||
-    lower.includes("could not submit") ||
-    /^website(\s*website)+$/i.test(trimmed.replace(/\s/g, ""))
-  ) {
-    return "Discovery call request";
-  }
+/** Parse project_summary — handles both old plain-text and new JSON format. */
+export function parseProjectSummary(raw: string): ParsedProject {
+  const trimmed = raw?.trim() ?? "";
+  try {
+    const p = JSON.parse(trimmed);
+    if (p && typeof p === "object" && typeof p.description === "string") {
+      return {
+        description: p.description,
+        companyUrl: p.companyUrl,
+        services: Array.isArray(p.services) ? p.services : undefined,
+        budget: p.budget,
+        projectStatus: p.projectStatus,
+        deadline: p.deadline,
+        guests: Array.isArray(p.guests) && p.guests.length > 0 ? p.guests : undefined,
+        isStructured: true,
+      };
+    }
+  } catch {}
+  return { description: trimmed || "Discovery call request", isStructured: false };
+}
 
-  if (trimmed.length > 200) {
-    return `${trimmed.slice(0, 200).trim()}…`;
-  }
-
-  return trimmed;
+/** Short one-line label for tables / card headers. */
+export function projectLabel(raw: string): string {
+  const { description } = parseProjectSummary(raw);
+  if (!description) return "Discovery call request";
+  return description.length > 120 ? `${description.slice(0, 120).trim()}…` : description;
 }

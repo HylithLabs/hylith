@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { parseISO } from "date-fns";
+import { AdminWeeklyTemplate } from "@/components/portal/AdminWeeklyTemplate";
 import {
   AppointmentScheduler,
   type TimeSlot,
@@ -85,6 +86,18 @@ export function AdminAvailabilitySettings() {
   const activeSlots = draftDirty ? draftSlots : savedSlots;
   const loadErrorMessage = queryError ? "Failed to load availability" : null;
   const displayError = error ?? loadErrorMessage;
+
+  function handleApplyTemplate(templateSlots: string[]) {
+    setDraftDirty(true);
+    setDraftSlots((prev) => {
+      const current = draftDirty ? prev : savedSlots;
+      const merged = [...current];
+      for (const iso of templateSlots) {
+        if (!merged.some((s) => sameSlot(s, iso))) merged.push(iso);
+      }
+      return merged.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    });
+  }
 
   const slotByTime = useMemo(() => {
     if (!selectedDateKey) return new Map<string, string>();
@@ -271,6 +284,8 @@ export function AdminAvailabilitySettings() {
 
   return (
     <div className="space-y-6">
+      <AdminWeeklyTemplate onApply={handleApplyTemplate} />
+
       <Card className="border-border bg-card/50 backdrop-blur-sm">
         <CardHeader>
           <CardTitle>Time for Meeting</CardTitle>
