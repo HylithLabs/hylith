@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdminSession } from "@/lib/admin-server";
 import { AGENCY_TIMEZONE } from "@/lib/availability-constants";
+import { isSlotInPast } from "@/lib/availability-client";
 import {
   getPortalSettings,
   updatePortalSettings,
@@ -62,7 +63,8 @@ export async function PATCH(request: Request) {
 
     const availableSlots = parsed.data.availableSlots
       .map(normalizeSlotIso)
-      .filter((s): s is string => s !== null);
+      .filter((s): s is string => s !== null)
+      .filter((s) => !isSlotInPast(s));
 
     const settings = await updatePortalSettings({
       availableSlots,

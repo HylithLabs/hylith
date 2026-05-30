@@ -145,11 +145,43 @@ create trigger assignments_updated_at
   for each row execute function public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
--- Realtime publication
+-- Realtime publication (idempotent — safe to re-run db:migrate)
 -- ---------------------------------------------------------------------------
-alter publication supabase_realtime add table public.clients;
-alter publication supabase_realtime add table public.settings;
-alter publication supabase_realtime add table public.assignments;
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'clients'
+  ) then
+    alter publication supabase_realtime add table public.clients;
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'settings'
+  ) then
+    alter publication supabase_realtime add table public.settings;
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'assignments'
+  ) then
+    alter publication supabase_realtime add table public.assignments;
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security

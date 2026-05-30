@@ -26,7 +26,7 @@ export default async function AdminPage() {
   return (
     <AuthSessionProvider>
       <QueryProvider>
-        <RealtimeSyncProvider>
+        <RealtimeSyncProvider syncSettings>
           <AdminPortalShell>
             <AdminMeetingsDashboard />
           </AdminPortalShell>

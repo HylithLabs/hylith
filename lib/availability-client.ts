@@ -1,4 +1,8 @@
-import { ALL_SLOT_TIME_LABELS } from "@/lib/availability-constants";
+import { addHours, isBefore } from "date-fns";
+import {
+  ALL_SLOT_TIME_LABELS,
+  MIN_LEAD_HOURS,
+} from "@/lib/availability-constants";
 import {
   getFutureDateKeys,
   slotIsoFromDateAndTime,
@@ -11,4 +15,16 @@ export function generateCandidateSlotsForDay(dateKey: string): string[] {
   return ALL_SLOT_TIME_LABELS.map((time) => slotIsoFromDateAndTime(dateKey, time));
 }
 
-export { ALL_SLOT_TIME_LABELS };
+/** True when the slot start is already in the past (Asia/Dhaka wall times). */
+export function isSlotInPast(iso: string | Date, now = new Date()) {
+  return isBefore(new Date(iso), now);
+}
+
+/** Whether a client can book this slot (future + lead time). */
+export function isClientSlotBookable(iso: string | Date, now = new Date()) {
+  const slot = new Date(iso);
+  if (isSlotInPast(slot, now)) return false;
+  return !isBefore(slot, addHours(now, MIN_LEAD_HOURS));
+}
+
+export { ALL_SLOT_TIME_LABELS, MIN_LEAD_HOURS };

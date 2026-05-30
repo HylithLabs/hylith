@@ -2,10 +2,23 @@ import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import { authConfig } from "@/lib/auth.config";
 import { isAdminEmail } from "@/lib/admin";
+import { updateSession } from "@/lib/supabase/ssr/middleware";
 
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+function withSupabaseCookies(
+  target: NextResponse,
+  source: NextResponse,
+) {
+  source.cookies.getAll().forEach((cookie) => {
+    target.cookies.set(cookie.name, cookie.value);
+  });
+  return target;
+}
+
+export default auth(async (req) => {
+  const supabaseResponse = await updateSession(req);
+
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
   const userEmail = req.auth?.user?.email;
@@ -17,15 +30,21 @@ export default auth((req) => {
       "callbackUrl",
       `${pathname}${req.nextUrl.search}`,
     );
-    return NextResponse.redirect(login);
+    return withSupabaseCookies(NextResponse.redirect(login), supabaseResponse);
   }
 
   if (pathname.startsWith("/admin") && isLoggedIn && !isAdmin) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
+    return withSupabaseCookies(
+      NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin)),
+      supabaseResponse,
+    );
   }
 
   if (pathname.startsWith("/dashboard") && isLoggedIn && isAdmin) {
-    return NextResponse.redirect(new URL("/admin", req.nextUrl.origin));
+    return withSupabaseCookies(
+      NextResponse.redirect(new URL("/admin", req.nextUrl.origin)),
+      supabaseResponse,
+    );
   }
 
   if (pathname.startsWith("/dashboard") && !isLoggedIn) {
@@ -34,7 +53,7 @@ export default auth((req) => {
       "callbackUrl",
       `${pathname}${req.nextUrl.search}`,
     );
-    return NextResponse.redirect(login);
+    return withSupabaseCookies(NextResponse.redirect(login), supabaseResponse);
   }
 
   if (
@@ -42,10 +61,13 @@ export default auth((req) => {
     (pathname === "/login" || pathname === "/signup")
   ) {
     const destination = isAdmin ? "/admin" : "/dashboard";
-    return NextResponse.redirect(new URL(destination, req.nextUrl.origin));
+    return withSupabaseCookies(
+      NextResponse.redirect(new URL(destination, req.nextUrl.origin)),
+      supabaseResponse,
+    );
   }
 
-  return NextResponse.next();
+  return supabaseResponse;
 });
 
 export const config = {

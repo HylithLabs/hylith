@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
-import { connectMongoose } from "@/lib/mongoose";
-import { Meeting } from "@/models/meeting";
-import { ClientDashboard } from "@/components/portal/client-dashboard";
+import { listAssignmentsForClient } from "@/lib/data/assignments.repository";
+import { ClientDashboardLive } from "@/components/portal/client-dashboard-live";
+import { DashboardDataProvider } from "@/components/providers/dashboard-data-provider";
 import type { MeetingItem } from "@/components/portal/meetings-list";
 
 export const dynamic = "force-dynamic";
@@ -13,18 +13,19 @@ export default async function DashboardPage() {
   }
   const name = session.user.name?.split(" ")[0] ?? "there";
 
-  await connectMongoose();
-  const docs = await Meeting.find({ userId: session.user.id })
-    .sort({ startAt: -1 })
-    .lean();
+  const docs = await listAssignmentsForClient(session.user.id);
 
   const meetings: MeetingItem[] = docs.map((m) => ({
-    _id: m._id.toString(),
-    startAt: m.startAt.toISOString(),
+    _id: m._id,
+    startAt: m.startAt,
     timezone: m.timezone,
     status: m.status,
     projectSummary: m.projectSummary,
   }));
 
-  return <ClientDashboard userName={name} meetings={meetings} />;
+  return (
+    <DashboardDataProvider userId={session.user.id}>
+      <ClientDashboardLive userName={name} initialMeetings={meetings} />
+    </DashboardDataProvider>
+  );
 }

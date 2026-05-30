@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { getMongoClient } from "@/lib/mongodb";
+import { createUser, findUserByEmail } from "@/lib/data/users.repository";
 
 const registerSchema = z.object({
   name: z.string().min(2).max(120),
@@ -24,10 +24,7 @@ export async function POST(request: Request) {
     const { name, email, password } = parsed.data;
     const normalizedEmail = email.toLowerCase();
 
-    const client = await getMongoClient();
-    const users = client.db().collection("users");
-
-    const existing = await users.findOne({ email: normalizedEmail });
+    const existing = await findUserByEmail(normalizedEmail);
     if (existing) {
       return NextResponse.json(
         { error: "An account with this email already exists" },
@@ -36,22 +33,15 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-
-    await users.insertOne({
-      name,
+    await createUser({
       email: normalizedEmail,
-      emailVerified: null,
+      name,
       passwordHash,
-      createdAt: new Date(),
     });
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
     console.error("Register error:", error);
-    const message =
-      error instanceof Error && error.message.includes("querySrv")
-        ? "Database connection failed. Restart the dev server and try again."
-        : "Registration failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }

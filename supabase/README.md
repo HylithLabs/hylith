@@ -1,22 +1,54 @@
 # Supabase database setup
 
-## Apply schema (preferred: Supabase MCP)
+Project ref: `kfqtfbvatlqspmvugpwm`
 
-1. Add a [personal access token](https://supabase.com/dashboard/account/tokens) to `.env.local` as `SUPABASE_ACCESS_TOKEN`.
-2. Enable the Supabase MCP server in `.cursor/mcp.json` (see `mcp.json.example`).
-3. In Cursor, ask the agent to run **apply_migration** with `supabase/migrations/20260530120000_initial_portal_schema.sql`.
+## Connection types (Dashboard → Connect)
 
-## Apply schema (manual)
+| Type | Host | User | IPv4 on Windows |
+|------|------|------|-----------------|
+| **Session pooler** (use this) | `aws-1-ap-northeast-2.pooler.supabase.com` | `postgres.kfqtfbvatlqspmvugpwm` | Yes |
+| Direct | `db.kfqtfbvatlqspmvugpwm.supabase.co` | `postgres` | Often no (`ENOTFOUND`) |
 
-Run the SQL file in the Supabase Dashboard → SQL Editor.
+Direct connection string from the dashboard:
 
-## Environment variables
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-SUPABASE_JWT_SECRET=   # Project Settings → API → JWT Secret (for realtime tokens)
+```text
+postgresql://postgres:[PASSWORD]@db.kfqtfbvatlqspmvugpwm.supabase.co:5432/postgres
 ```
 
-When Supabase env vars are unset, the app continues to use MongoDB.
+Session pooler (copy from **Connect → Session pooler**):
+
+```text
+postgresql://postgres.kfqtfbvatlqspmvugpwm:[PASSWORD]@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
+```
+
+Put the working URI in `.env` as `SUPABASE_DB_URL=...` then run `npm run db:migrate`.
+
+## Apply schema
+
+### SQL Editor (no CLI)
+
+1. [SQL Editor](https://supabase.com/dashboard/project/kfqtfbvatlqspmvugpwm/sql/new)
+2. Run each file in `supabase/migrations/` in order (sorted by filename).
+
+### CLI
+
+```bash
+npm run db:migrate
+```
+
+## App environment
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://kfqtfbvatlqspmvugpwm.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_JWT_SECRET=
+```
+
+Supabase is required for data and auth (`clients` table).
+
+## Optional: Agent Skills
+
+```bash
+npx skills add supabase/agent-skills
+```

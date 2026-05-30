@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { connectMongoose } from "@/lib/mongoose";
-import { Meeting } from "@/models/meeting";
+import { listBookedStartTimes } from "@/lib/data/assignments.repository";
 import {
   getAgencyTimezone,
   getBookableDateKeysInRange,
-  getSlotsForDayByKey,
+  getOpenDateKeysInRange,
+  getSlotAvailabilityForDayByKey,
 } from "@/lib/availability";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -17,27 +19,29 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
 
-  await connectMongoose();
-  const booked = await Meeting.find({
-    status: { $in: ["pending", "confirmed"] },
-  }).select("startAt");
-  const bookedStarts = booked.map((m) => m.startAt);
-
+  const bookedStarts = await listBookedStartTimes();
   const timezone = getAgencyTimezone();
 
   if (dateParam) {
-    const slots = await getSlotsForDayByKey(dateParam, bookedStarts);
+    const slots = await getSlotAvailabilityForDayByKey(dateParam, bookedStarts);
     return NextResponse.json({
       timezone,
       date: dateParam,
-      slots: slots.map((s) => s.toISOString()),
+      slots: slots.map(({ startAt, bookable }) => ({
+        startAt: startAt.toISOString(),
+        bookable,
+      })),
     });
   }
 
-  const bookableDays = await getBookableDateKeysInRange(bookedStarts, 60);
+  const [bookableDays, openDays] = await Promise.all([
+    getBookableDateKeysInRange(bookedStarts, 60),
+    getOpenDateKeysInRange(60),
+  ]);
 
   return NextResponse.json({
     timezone,
     bookableDays,
+    openDays,
   });
 }

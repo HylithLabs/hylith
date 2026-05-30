@@ -1,11 +1,8 @@
-import { connectMongoose } from "@/lib/mongoose";
-import { AvailabilitySettings } from "@/models/availability-settings";
 import {
   AGENCY_TIMEZONE,
   SLOT_DURATION_MINUTES,
 } from "@/lib/availability-constants";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export type PortalSettings = {
   availableSlots: string[];
@@ -19,84 +16,68 @@ const DEFAULT_SETTINGS: PortalSettings = {
   timezone: AGENCY_TIMEZONE,
 };
 
-export async function getPortalSettings(): Promise<PortalSettings> {
+function admin() {
   const supabase = getSupabaseAdmin();
-  if (isSupabaseConfigured() && supabase) {
-    const { data, error } = await supabase
-      .from("settings")
-      .select("*")
-      .eq("id", "default")
-      .maybeSingle();
-
-    if (error) throw error;
-    if (!data) return DEFAULT_SETTINGS;
-
-    return {
-      availableSlots: (data.available_slots as string[]) ?? [],
-      slotDurationMinutes: data.slot_duration_minutes ?? SLOT_DURATION_MINUTES,
-      timezone: data.timezone ?? AGENCY_TIMEZONE,
-    };
+  if (!supabase) {
+    throw new Error("Supabase is not configured");
   }
+  return supabase;
+}
 
-  await connectMongoose();
-  const doc = await AvailabilitySettings.findOne().lean();
-  if (!doc) return DEFAULT_SETTINGS;
+function normalizeSlots(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((s) => {
+      const d = new Date(s as string);
+      return Number.isNaN(d.getTime()) ? null : d.toISOString();
+    })
+    .filter((s): s is string => s !== null);
+}
 
+function rowToPortalSettings(data: {
+  available_slots: unknown;
+  slot_duration_minutes: number;
+  timezone: string;
+}): PortalSettings {
   return {
-    availableSlots: doc.availableSlots ?? [],
-    slotDurationMinutes: doc.slotDurationMinutes ?? SLOT_DURATION_MINUTES,
-    timezone: doc.timezone ?? AGENCY_TIMEZONE,
+    availableSlots: normalizeSlots(data.available_slots),
+    slotDurationMinutes: data.slot_duration_minutes ?? SLOT_DURATION_MINUTES,
+    timezone: data.timezone ?? AGENCY_TIMEZONE,
   };
+}
+
+export async function getPortalSettings(): Promise<PortalSettings> {
+  const { data, error } = await admin()
+    .from("settings")
+    .select("*")
+    .eq("id", "default")
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return DEFAULT_SETTINGS;
+  return rowToPortalSettings(data);
 }
 
 export async function updatePortalSettings(
   patch: Partial<PortalSettings>,
 ): Promise<PortalSettings> {
-  const supabase = getSupabaseAdmin();
-  if (isSupabaseConfigured() && supabase) {
-    const current = await getPortalSettings();
-    const next = { ...current, ...patch };
+  const current = await getPortalSettings();
+  const next = { ...current, ...patch };
 
-    const { data, error } = await supabase
-      .from("settings")
-      .upsert({
+  const { data, error } = await admin()
+    .from("settings")
+    .upsert(
+      {
         id: "default",
         available_slots: next.availableSlots,
         slot_duration_minutes: next.slotDurationMinutes,
         timezone: next.timezone,
-      })
-      .select("*")
-      .single();
-
-    if (error) throw error;
-
-    return {
-      availableSlots: (data.available_slots as string[]) ?? [],
-      slotDurationMinutes: data.slot_duration_minutes,
-      timezone: data.timezone,
-    };
-  }
-
-  await connectMongoose();
-  const doc = await AvailabilitySettings.findOneAndUpdate(
-    {},
-    {
-      $set: {
-        ...(patch.availableSlots !== undefined
-          ? { availableSlots: patch.availableSlots }
-          : {}),
-        ...(patch.slotDurationMinutes !== undefined
-          ? { slotDurationMinutes: patch.slotDurationMinutes }
-          : {}),
-        ...(patch.timezone !== undefined ? { timezone: patch.timezone } : {}),
       },
-    },
-    { upsert: true, new: true },
-  ).lean();
+      { onConflict: "id" },
+    )
+    .select("*")
+    .single();
 
-  return {
-    availableSlots: doc?.availableSlots ?? [],
-    slotDurationMinutes: doc?.slotDurationMinutes ?? SLOT_DURATION_MINUTES,
-    timezone: doc?.timezone ?? AGENCY_TIMEZONE,
-  };
+  if (error) throw error;
+  return rowToPortalSettings(data);
 }

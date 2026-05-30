@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { connectMongoose } from "@/lib/mongoose";
-import { Meeting } from "@/models/meeting";
+import {
+  deleteAssignmentForClient,
+  getAssignmentForClient,
+} from "@/lib/data/assignments.repository";
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function DELETE(
   _request: Request,
@@ -14,17 +19,12 @@ export async function DELETE(
 
   const { id } = await context.params;
 
-  // Validate MongoDB ObjectId format
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!UUID_RE.test(id)) {
     return NextResponse.json({ error: "Invalid meeting ID" }, { status: 400 });
   }
 
   try {
-    await connectMongoose();
-    const meeting = await Meeting.findOne({
-      _id: id,
-      userId: session.user.id,
-    });
+    const meeting = await getAssignmentForClient(id, session.user.id);
 
     if (!meeting) {
       return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
@@ -37,7 +37,10 @@ export async function DELETE(
       );
     }
 
-    await Meeting.deleteOne({ _id: id });
+    const removed = await deleteAssignmentForClient(id, session.user.id);
+    if (!removed) {
+      return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -19,9 +19,9 @@ export function PortalShell({
               <Image
                 src="/assets/logo.svg"
                 alt="Hylith"
-                width={120}
-                height={28}
-                className="h-7 w-auto"
+                width={80}
+                height={20}
+                className="sm:hidden md:block lg:block xl:block"
                 priority
               />
             </Link>

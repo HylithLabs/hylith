@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { parseISO } from "date-fns";
 import {
   AppointmentScheduler,
@@ -27,6 +28,7 @@ import { AGENCY_TIMEZONE } from "@/lib/availability-constants";
 import {
   generateCandidateSlotsForDay,
   getFutureDateKeys,
+  isSlotInPast,
 } from "@/lib/availability-client";
 import {
   formatDateLabel,
@@ -36,21 +38,37 @@ import {
   todayDateKey,
 } from "@/lib/availability-utils";
 import { cn } from "@/lib/utils";
+import { useAdminAvailabilitySettings } from "@/lib/hooks/use-admin-availability-settings";
+import { queryKeys } from "@/lib/query/keys";
 
 function sameSlot(a: string, b: string) {
   return Math.abs(new Date(a).getTime() - new Date(b).getTime()) < 60_000;
 }
 
 export function AdminAvailabilitySettings() {
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: settings,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useAdminAvailabilitySettings();
+  const savedSlots = settings?.availableSlots ?? [];
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   /** Unsaved picks in the scheduler */
   const [draftSlots, setDraftSlots] = useState<string[]>([]);
-  /** Saved in DB — shown to clients and in "Your available times" */
-  const [savedSlots, setSavedSlots] = useState<string[]>([]);
+  const [draftDirty, setDraftDirty] = useState(false);
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+  /** Re-evaluate past slots as the clock moves (e.g. 1pm becomes disabled after 2pm). */
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   const futureDateKeys = useMemo(() => getFutureDateKeys(60), []);
 
@@ -59,26 +77,16 @@ export function AdminAvailabilitySettings() {
     return Array.from(keys).sort();
   }, [savedSlots]);
 
-  const loadSettings = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/admin/availability-settings");
-      if (!res.ok) throw new Error("Failed to fetch availability");
-      const data = await res.json();
-      const slots: string[] = data.settings?.availableSlots ?? [];
-      setSavedSlots(slots);
-      setDraftSlots(slots);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load availability");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  useEffect(() => {
+    if (!settings || draftDirty) return;
+    setDraftSlots(settings.availableSlots);
+  }, [settings, draftDirty]);
 
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    if (queryError) {
+      setError("Failed to load availability");
+    }
+  }, [queryError]);
 
   useEffect(() => {
     if (!loading && !selectedDateKey) {
@@ -97,24 +105,27 @@ export function AdminAvailabilitySettings() {
 
   const selectedTimesForDay = useMemo(() => {
     if (!selectedDateKey) return [];
+    const now = new Date(nowMs);
     const times: string[] = [];
     for (const iso of draftSlots) {
       if (formatSlotDateKey(iso) !== selectedDateKey) continue;
+      if (isSlotInPast(iso, now)) continue;
       const time = formatSlotTimeKey(iso);
       if (slotByTime.has(time)) times.push(time);
     }
     return times;
-  }, [draftSlots, selectedDateKey, slotByTime]);
+  }, [draftSlots, selectedDateKey, slotByTime, nowMs]);
 
   const timeSlots: TimeSlot[] = useMemo(() => {
     if (!selectedDateKey) return [];
-    return Array.from(slotByTime.keys())
-      .sort()
-      .map((time) => ({
+    const now = new Date(nowMs);
+    return Array.from(slotByTime.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([time, iso]) => ({
         time,
-        available: true,
+        available: !isSlotInPast(iso, now),
       }));
-  }, [selectedDateKey, slotByTime]);
+  }, [selectedDateKey, slotByTime, nowMs]);
 
   const hasUnsavedChanges = useMemo(() => {
     if (draftSlots.length !== savedSlots.length) return true;
@@ -138,8 +149,9 @@ export function AdminAvailabilitySettings() {
 
   function handleTimeToggle(time: string) {
     const iso = slotByTime.get(time);
-    if (!iso) return;
+    if (!iso || isSlotInPast(iso)) return;
 
+    setDraftDirty(true);
     setDraftSlots((prev) => {
       const exists = prev.some((s) => sameSlot(s, iso));
       if (exists) return prev.filter((s) => !sameSlot(s, iso));
@@ -151,7 +163,11 @@ export function AdminAvailabilitySettings() {
 
   function openAllTimesForSelectedDay() {
     if (!selectedDateKey) return;
-    const candidates = generateCandidateSlotsForDay(selectedDateKey);
+    const now = new Date();
+    const candidates = generateCandidateSlotsForDay(selectedDateKey).filter(
+      (iso) => !isSlotInPast(iso, now),
+    );
+    setDraftDirty(true);
     setDraftSlots((prev) => {
       const merged = [...prev];
       for (const iso of candidates) {
@@ -163,16 +179,18 @@ export function AdminAvailabilitySettings() {
 
   function closeAllTimesForSelectedDay() {
     if (!selectedDateKey) return;
+    setDraftDirty(true);
     setDraftSlots((prev) =>
       prev.filter((s) => formatSlotDateKey(s) !== selectedDateKey),
     );
   }
 
   async function persistSlots(slots: string[]) {
+    const futureSlots = slots.filter((iso) => !isSlotInPast(iso));
     const res = await fetch("/api/admin/availability-settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ availableSlots: slots }),
+      body: JSON.stringify({ availableSlots: futureSlots }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -192,8 +210,13 @@ export function AdminAvailabilitySettings() {
     setSuccess(false);
     try {
       const saved = await persistSlots(draftSlots);
-      setSavedSlots(saved);
       setDraftSlots(saved);
+      setDraftDirty(false);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.availabilitySettings,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.availability });
+      await refetch();
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -209,8 +232,12 @@ export function AdminAvailabilitySettings() {
     try {
       const next = savedSlots.filter((s) => !sameSlot(s, iso));
       const saved = await persistSlots(next);
-      setSavedSlots(saved);
       setDraftSlots(saved);
+      setDraftDirty(false);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.availabilitySettings,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.availability });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to remove slot");
     } finally {
@@ -224,8 +251,12 @@ export function AdminAvailabilitySettings() {
     try {
       const next = savedSlots.filter((s) => formatSlotDateKey(s) !== dateKey);
       const saved = await persistSlots(next);
-      setSavedSlots(saved);
       setDraftSlots(saved);
+      setDraftDirty(false);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.availabilitySettings,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.availability });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to clear day");
     } finally {

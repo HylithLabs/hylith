@@ -7,6 +7,7 @@ import type {
 import type { QueryClient } from "@tanstack/react-query";
 import { getSupabaseBrowserWithToken } from "@/lib/supabase/browser";
 import { queryKeys } from "@/lib/query/keys";
+import type { MeetingItem } from "@/components/portal/meetings-list";
 import type { AdminMeetingItem } from "@/lib/types/admin-meeting";
 
 type AssignmentRow = {
@@ -23,7 +24,7 @@ type AssignmentRow = {
   created_at: string;
 };
 
-function rowToMeeting(row: AssignmentRow): AdminMeetingItem {
+function rowToAdminMeeting(row: AssignmentRow): AdminMeetingItem {
   return {
     _id: row.id,
     userId: row.client_id,
@@ -39,7 +40,21 @@ function rowToMeeting(row: AssignmentRow): AdminMeetingItem {
   };
 }
 
-function applyAssignmentChange(
+function rowToClientMeeting(row: AssignmentRow): MeetingItem {
+  return {
+    _id: row.id,
+    startAt: row.start_at,
+    timezone: row.timezone,
+    status: row.status,
+    projectSummary: row.project_summary,
+  };
+}
+
+function belongsToClient(row: AssignmentRow | undefined, clientId: string) {
+  return row?.client_id === clientId;
+}
+
+function applyAdminAssignmentChange(
   queryClient: QueryClient,
   payload: RealtimePostgresChangesPayload<AssignmentRow>,
 ) {
@@ -55,7 +70,7 @@ function applyAssignmentChange(
 
       if (!row) return current;
 
-      const meeting = rowToMeeting(row);
+      const meeting = rowToAdminMeeting(row);
       const idx = current.findIndex((m) => m._id === meeting._id);
 
       if (payload.eventType === "INSERT") {
@@ -75,32 +90,70 @@ function applyAssignmentChange(
   );
 }
 
+function applyClientAssignmentChange(
+  queryClient: QueryClient,
+  payload: RealtimePostgresChangesPayload<AssignmentRow>,
+  clientId: string,
+) {
+  const row = payload.new as AssignmentRow | undefined;
+  const oldRow = payload.old as AssignmentRow | undefined;
+
+  if (payload.eventType === "DELETE" && oldRow && !belongsToClient(oldRow, clientId)) {
+    return;
+  }
+  if (row && !belongsToClient(row, clientId)) return;
+  if (oldRow && !row && !belongsToClient(oldRow, clientId)) return;
+
+  queryClient.setQueryData<MeetingItem[]>(
+    queryKeys.clientMeetings,
+    (current = []) => {
+      if (payload.eventType === "DELETE" && oldRow) {
+        return current.filter((m) => m._id !== oldRow.id);
+      }
+
+      if (!row) return current;
+
+      const meeting = rowToClientMeeting(row);
+      const idx = current.findIndex((m) => m._id === meeting._id);
+
+      if (payload.eventType === "INSERT") {
+        if (idx >= 0) {
+          const next = [...current];
+          next[idx] = meeting;
+          return next;
+        }
+        return [meeting, ...current].sort(
+          (a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime(),
+        );
+      }
+
+      if (idx === -1) {
+        return [meeting, ...current].sort(
+          (a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime(),
+        );
+      }
+      const next = [...current];
+      next[idx] = meeting;
+      return next;
+    },
+  );
+}
+
+export type RealtimeSyncOptions = {
+  /** When set, updates client meeting cache (dashboard). */
+  clientId?: string;
+};
+
 export type RealtimeSyncHandle = {
   unsubscribe: () => void;
 };
 
-export function subscribeAssignmentsRealtime(
+export function subscribeSettingsRealtime(
   queryClient: QueryClient,
   accessToken: string,
 ): RealtimeSyncHandle {
   const supabase = getSupabaseBrowserWithToken(accessToken);
-  const channels: RealtimeChannel[] = [];
-
-  const assignmentsChannel = supabase
-    .channel("assignments-changes")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "assignments" },
-      (payload) => {
-        applyAssignmentChange(
-          queryClient,
-          payload as RealtimePostgresChangesPayload<AssignmentRow>,
-        );
-      },
-    )
-    .subscribe();
-
-  channels.push(assignmentsChannel);
+  void supabase.realtime.setAuth(accessToken);
 
   const settingsChannel = supabase
     .channel("settings-changes")
@@ -111,11 +164,61 @@ export function subscribeAssignmentsRealtime(
         void queryClient.invalidateQueries({
           queryKey: queryKeys.availabilitySettings,
         });
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.availability,
+        });
       },
     )
     .subscribe();
 
-  channels.push(settingsChannel);
+  return {
+    unsubscribe: () => {
+      void supabase.removeChannel(settingsChannel);
+    },
+  };
+}
+
+export function subscribeAssignmentsRealtime(
+  queryClient: QueryClient,
+  accessToken: string,
+  options: RealtimeSyncOptions = {},
+): RealtimeSyncHandle {
+  const supabase = getSupabaseBrowserWithToken(accessToken);
+  void supabase.realtime.setAuth(accessToken);
+  const channels: RealtimeChannel[] = [];
+  const { clientId } = options;
+
+  const changeConfig: {
+    event: "*";
+    schema: "public";
+    table: "assignments";
+    filter?: string;
+  } = {
+    event: "*",
+    schema: "public",
+    table: "assignments",
+  };
+
+  if (clientId) {
+    changeConfig.filter = `client_id=eq.${clientId}`;
+  }
+
+  const assignmentsChannel = supabase
+    .channel(clientId ? `assignments-client-${clientId}` : "assignments-admin")
+    .on("postgres_changes", changeConfig, (payload) => {
+      const typed = payload as RealtimePostgresChangesPayload<AssignmentRow>;
+      if (clientId) {
+        applyClientAssignmentChange(queryClient, typed, clientId);
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.clientMeetings,
+        });
+      } else {
+        applyAdminAssignmentChange(queryClient, typed);
+      }
+    })
+    .subscribe();
+
+  channels.push(assignmentsChannel);
 
   return {
     unsubscribe: () => {

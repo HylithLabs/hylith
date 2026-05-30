@@ -4,6 +4,7 @@ import { getPortalSettings } from "@/lib/data/settings.repository";
 import {
   AGENCY_TIMEZONE,
   ALL_SLOT_TIME_LABELS,
+  MIN_LEAD_HOURS,
   SLOT_DURATION_MINUTES,
 } from "./availability-constants";
 import {
@@ -18,8 +19,6 @@ export {
   ALL_SLOT_TIME_LABELS,
 } from "./availability-constants";
 export { getFutureDateKeys, todayDateKey } from "./availability-utils";
-
-const MIN_LEAD_HOURS = 24;
 
 export async function getSettings() {
   const settings = await getPortalSettings();
@@ -55,20 +54,44 @@ function toDateArray(slots: unknown): Date[] {
   return slots.map((s) => new Date(s as string | Date));
 }
 
-function slotsForDateKey(
+export type SlotAvailability = {
+  startAt: Date;
+  bookable: boolean;
+};
+
+function isSlotBookable(
+  slot: Date,
+  bookedStarts: Date[],
+  nowUtc = new Date(),
+) {
+  const minStart = addHours(nowUtc, MIN_LEAD_HOURS);
+  if (isBefore(slot, minStart)) return false;
+  if (bookedStarts.some((b) => sameSlot(b, slot))) return false;
+  return true;
+}
+
+/** Admin-open slots on a day that have not started yet (ignores 24h lead time). */
+function openSlotsForDateKey(
+  availableSlots: Date[],
+  dateKey: string,
+  nowUtc = new Date(),
+): Date[] {
+  return availableSlots.filter((slot) => {
+    if (formatSlotDateKey(slot) !== dateKey) return false;
+    if (isBefore(slot, nowUtc)) return false;
+    return true;
+  });
+}
+
+function bookableSlotsForDateKey(
   availableSlots: Date[],
   dateKey: string,
   bookedStarts: Date[],
+  nowUtc = new Date(),
 ): Date[] {
-  const nowUtc = new Date();
-  const minStart = addHours(nowUtc, MIN_LEAD_HOURS);
-
-  return availableSlots.filter((slot) => {
-    if (formatSlotDateKey(slot) !== dateKey) return false;
-    if (isBefore(slot, minStart)) return false;
-    if (bookedStarts.some((b) => sameSlot(b, slot))) return false;
-    return true;
-  });
+  return openSlotsForDateKey(availableSlots, dateKey, nowUtc).filter((slot) =>
+    isSlotBookable(slot, bookedStarts, nowUtc),
+  );
 }
 
 /** Bookable slots on a specific yyyy-MM-dd day (Asia/Dhaka). */
@@ -77,7 +100,28 @@ export async function getSlotsForDayByKey(
   bookedStarts: Date[] = [],
 ): Promise<Date[]> {
   const settings = await getSettings();
-  return slotsForDateKey(toDateArray(settings.availableSlots), dateKey, bookedStarts);
+  return bookableSlotsForDateKey(
+    toDateArray(settings.availableSlots),
+    dateKey,
+    bookedStarts,
+  );
+}
+
+/** Open + bookable flags for each admin slot on a day (for client UI). */
+export async function getSlotAvailabilityForDayByKey(
+  dateKey: string,
+  bookedStarts: Date[] = [],
+): Promise<SlotAvailability[]> {
+  const settings = await getSettings();
+  const nowUtc = new Date();
+  const openSlots = toDateArray(settings.availableSlots);
+
+  return openSlotsForDateKey(openSlots, dateKey, nowUtc)
+    .sort((a, b) => a.getTime() - b.getTime())
+    .map((startAt) => ({
+      startAt,
+      bookable: isSlotBookable(startAt, bookedStarts, nowUtc),
+    }));
 }
 
 /** yyyy-MM-dd dates that have at least one bookable slot. */
@@ -95,8 +139,31 @@ export async function getBookableDateKeysInRange(
       toZonedTime(addDays(start, i), AGENCY_TIMEZONE),
       "yyyy-MM-dd",
     );
-    const open = slotsForDateKey(openSlots, dateKey, bookedStarts);
+    const open = bookableSlotsForDateKey(openSlots, dateKey, bookedStarts);
     if (open.length > 0) keys.push(dateKey);
+  }
+
+  return keys;
+}
+
+/** yyyy-MM-dd dates with any future admin-open slot (shown on client calendar). */
+export async function getOpenDateKeysInRange(
+  daysAhead = 60,
+): Promise<string[]> {
+  const settings = await getSettings();
+  const openSlots = toDateArray(settings.availableSlots);
+  const nowUtc = new Date();
+  const keys: string[] = [];
+  const start = fromZonedTime(`${todayDateKey()}T00:00:00`, AGENCY_TIMEZONE);
+
+  for (let i = 0; i <= daysAhead; i++) {
+    const dateKey = format(
+      toZonedTime(addDays(start, i), AGENCY_TIMEZONE),
+      "yyyy-MM-dd",
+    );
+    if (openSlotsForDateKey(openSlots, dateKey, nowUtc).length > 0) {
+      keys.push(dateKey);
+    }
   }
 
   return keys;
@@ -110,6 +177,5 @@ export async function isValidBookableSlot(
   const openSlots = toDateArray(settings.availableSlots);
   const isOpen = openSlots.some((s) => sameSlot(s, startAt));
   if (!isOpen) return false;
-  if (bookedStarts.some((b) => sameSlot(b, startAt))) return false;
-  return true;
+  return isSlotBookable(startAt, bookedStarts);
 }

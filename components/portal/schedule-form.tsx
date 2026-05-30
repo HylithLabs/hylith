@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { format, parseISO } from "date-fns";
@@ -19,21 +19,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { isSlotInPast } from "@/lib/availability-client";
+import { MIN_LEAD_HOURS } from "@/lib/availability-constants";
 import {
   formatDateLabel,
   formatSlotLabel,
   formatSlotTimeKey,
 } from "@/lib/availability-utils";
+import { useBookableDays, useSlotsForDay } from "@/lib/hooks/use-availability";
 
 export function ScheduleForm() {
   const router = useRouter();
   const { data: session } = useSession();
-  const [bookableDays, setBookableDays] = useState<string[]>([]);
-  const [timezone, setTimezone] = useState("Asia/Dhaka");
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
-  const [slots, setSlots] = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedSlotIso, setSelectedSlotIso] = useState<string | null>(null);
+  const { data: daysData, error: daysError } = useBookableDays();
+  const { data: slotsData, error: slotsError } = useSlotsForDay(selectedDateKey);
+
+  const bookableDays = daysData?.openDays ?? daysData?.bookableDays ?? [];
+  const timezone = daysData?.timezone ?? slotsData?.timezone ?? "Asia/Dhaka";
+  const slots = slotsData?.slots ?? [];
   const [projectSummary, setProjectSummary] = useState("");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
@@ -42,62 +48,29 @@ export function ScheduleForm() {
   const [emailWarning, setEmailWarning] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const loadDays = useCallback(async () => {
-    try {
-      const res = await fetch("/api/availability");
-      if (!res.ok) {
-        setError("Failed to load available dates");
-        return;
-      }
-      const data = await res.json();
-      setBookableDays(data.bookableDays ?? []);
-      setTimezone(data.timezone ?? "Asia/Dhaka");
-    } catch (err) {
+  useEffect(() => {
+    if (daysError) {
       setError("Error loading availability. Please refresh the page.");
-      console.error("Load days error:", err);
+    } else if (slotsError) {
+      setError("Error loading time slots. Please try again.");
     }
-  }, []);
+  }, [daysError, slotsError]);
 
   useEffect(() => {
-    loadDays();
-  }, [loadDays]);
-
-  useEffect(() => {
-    if (!selectedDateKey) {
-      setSlots([]);
-      setSelectedTime("");
-      setSelectedSlotIso(null);
-      return;
-    }
-
-    (async () => {
-      try {
-        const res = await fetch(`/api/availability?date=${selectedDateKey}`);
-        if (!res.ok) {
-          setError("Failed to load time slots");
-          return;
-        }
-        const data = await res.json();
-        setSlots(data.slots ?? []);
-        setSelectedTime("");
-        setSelectedSlotIso(null);
-      } catch (err) {
-        setError("Error loading time slots. Please try again.");
-        console.error("Fetch slots error:", err);
-      }
-    })();
-  }, [selectedDateKey]);
+    setSelectedTime("");
+    setSelectedSlotIso(null);
+  }, [selectedDateKey, slots]);
 
   const timeSlots: TimeSlot[] = useMemo(
     () =>
-      slots.map((iso) => {
+      slots.map(({ startAt, bookable }) => {
         try {
           return {
-            time: formatSlotTimeKey(iso),
-            available: true,
+            time: formatSlotTimeKey(startAt),
+            available: bookable,
           };
         } catch (err) {
-          console.error("Error parsing time slot:", iso, err);
+          console.error("Error parsing time slot:", startAt, err);
           return {
             time: "--:--",
             available: false,
@@ -109,15 +82,19 @@ export function ScheduleForm() {
 
   const slotByTime = useMemo(() => {
     const map = new Map<string, string>();
-    for (const iso of slots) {
+    for (const { startAt, bookable } of slots) {
+      if (!bookable) continue;
       try {
-        map.set(formatSlotTimeKey(iso), iso);
+        map.set(formatSlotTimeKey(startAt), startAt);
       } catch (err) {
-        console.error("Error mapping time slot:", iso, err);
+        console.error("Error mapping time slot:", startAt, err);
       }
     }
     return map;
   }, [slots]);
+
+  const hasOpenButUnbookableSlots =
+    slots.length > 0 && slots.every(({ bookable }) => !bookable);
 
   function handleTimeSelect(time: string) {
     setSelectedTime(time);
@@ -192,12 +169,21 @@ export function ScheduleForm() {
         duration="30 minutes"
         timezone={timezone}
         bookableDateKeys={bookableDays}
+        highlightedDateKeys={daysData?.bookableDays ?? []}
         timeSlots={timeSlots}
         onDateSelect={setSelectedDateKey}
         onTimeSelect={handleTimeSelect}
         brandName="Hylith"
         initialSelectedTime={selectedTime}
       />
+
+      {hasOpenButUnbookableSlots ? (
+        <p className="mx-auto max-w-5xl text-sm text-muted-foreground">
+          Gray times start within {MIN_LEAD_HOURS} hour
+          {MIN_LEAD_HOURS === 1 ? "" : "s"} or are already booked. Choose a
+          later slot.
+        </p>
+      ) : null}
 
       <Card className="mx-auto w-full max-w-5xl border-border bg-card">
         <CardHeader>

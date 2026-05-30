@@ -3,6 +3,9 @@ export const AGENCY_TIMEZONE = "Asia/Dhaka";
 
 export const SLOT_DURATION_MINUTES = 30;
 
+/** Client bookings must be at least this many hours in the future. */
+export const MIN_LEAD_HOURS = 1;
+
 /** Full 24h clock: 00:00 through 23:30 in 30-minute steps. */
 export const WORK_START_HOUR = 0;
 export const WORK_END_HOUR = 24;
