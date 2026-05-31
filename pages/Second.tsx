@@ -88,7 +88,7 @@ const COLLAPSED = {
 const EXPANDED = {
   scale: 1,
   borderRadius: 0,
-  backgroundColor: "#0F0B0A",
+  backgroundColor: "#EFEFED",
 } as const;
 
 const PIN_SCROLL_DISTANCE = "+=200%";
@@ -204,9 +204,7 @@ const Second = () => {
         gsap.set(".second-copy", { color: "#EEEEE8" });
         gsap.set(".second-link", { borderColor: "#EEEEE8" });
 
-        const approach = gsap.to(section, {
-          ...EXPANDED,
-          ease: "none",
+        const approach = gsap.timeline({
           scrollTrigger: {
             trigger: wrapper,
             start: "top 75%",
@@ -215,6 +213,22 @@ const Second = () => {
             invalidateOnRefresh: true,
           },
         });
+
+        approach
+          .to(section, {
+            ...EXPANDED,
+            ease: "none",
+          }, 0)
+          .to(
+            ".second-copy",
+            { color: "#0F0B0A", ease: "none" },
+            0,
+          )
+          .to(
+            ".second-link",
+            { borderColor: "#0F0B0A", ease: "none" },
+            0,
+          );
 
 
         const pinned = gsap.timeline({
@@ -239,12 +253,12 @@ const Second = () => {
           })
           .to(
             ".second-copy",
-            { color: "#EEEEE8", ease: "none", duration: 1 },
+            { color: "#EFEFED", ease: "none", duration: 1 },
             "<",
           )
           .to(
             ".second-link",
-            { borderColor: "#EEEEE8", ease: "none", duration: 1 },
+            { borderColor: "#EFEFED", ease: "none", duration: 1 },
             "<",
           );
 
