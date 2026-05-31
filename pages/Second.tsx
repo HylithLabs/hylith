@@ -88,7 +88,7 @@ const COLLAPSED = {
 const EXPANDED = {
   scale: 1,
   borderRadius: 0,
-  backgroundColor: "#0F0B0A",
+  backgroundColor: "#EEEEE8",
 } as const;
 
 const PIN_SCROLL_DISTANCE = "+=200%";
@@ -216,6 +216,29 @@ const Second = () => {
           },
         });
 
+        gsap.to(".second-copy", {
+          color: "#0F0B0A",
+          ease: "none",
+          scrollTrigger: {
+            trigger: wrapper,
+            start: "top 75%",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        gsap.to(".second-link", {
+          borderColor: "#0F0B0A",
+          ease: "none",
+          scrollTrigger: {
+            trigger: wrapper,
+            start: "top 75%",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
 
         const pinned = gsap.timeline({
           scrollTrigger: {
@@ -273,7 +296,7 @@ const Second = () => {
     <section ref={wrapperRef} className="second-wrapper overflow-hidden">
       <div
         ref={sectionRef}
-        className="second-section relative min-h-screen w-full px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16 xl:grid xl:min-h-screen xl:grid-cols-2 xl:items-stretch xl:gap-x-28 xl:px-28 xl:py-24"
+        className="second-section relative min-h-screen w-full bg-[#EEEEE8] px-6 py-10 sm:px-12 sm:py-14 lg:px-16 lg:py-16 xl:grid xl:min-h-screen xl:grid-cols-2 xl:items-stretch xl:gap-x-28 xl:px-28 xl:py-24"
       >
         {/* Left column */}
         <div className="flex min-w-0 flex-col justify-between gap-14 sm:gap-20 xl:min-h-[calc(100vh-9rem)] xl:gap-0">
