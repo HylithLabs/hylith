@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { addMinutes } from "date-fns";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { getAgencyTimezone, isValidBookableSlot } from "@/lib/availability";
+import { getAgencyTimezone, getSlotDurationMinutes, isValidBookableSlot } from "@/lib/availability";
 import { sendMeetingEmails } from "@/lib/email";
+import { createDiscoveryMeetingMeetLink, type GoogleMeetCreationResult } from "@/lib/google-calendar";
 import {
   countPendingAssignments,
   createAssignment,
@@ -27,8 +29,19 @@ const createSchema = z.object({
 
 const MAX_PENDING = 1;
 
+export const runtime = "nodejs";
+
+async function getSessionJsonSafe() {
+  try {
+    return await auth();
+  } catch (error) {
+    console.error("Auth session error in meetings route:", error);
+    return null;
+  }
+}
+
 export async function GET() {
-  const session = await auth();
+  const session = await getSessionJsonSafe();
   if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -45,7 +58,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await getSessionJsonSafe();
   if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -67,7 +80,12 @@ export async function POST(request: Request) {
     const dbUser = await findUserByEmail(session.user.email);
     const clientId = dbUser?.id ?? session.user.id;
 
-    const pendingCount = await countPendingAssignments(clientId);
+    const [pendingCount, bookedStarts, hasConflict] = await Promise.all([
+      countPendingAssignments(clientId),
+      listBookedStartTimes(),
+      hasAssignmentConflict(startAt),
+    ]);
+
     if (pendingCount >= MAX_PENDING) {
       return NextResponse.json(
         { error: "You already have a pending meeting. Wait until it is closed before scheduling another." },
@@ -75,12 +93,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const bookedStarts = await listBookedStartTimes();
     if (!(await isValidBookableSlot(startAt, bookedStarts))) {
       return NextResponse.json({ error: "This time slot is no longer available" }, { status: 409 });
     }
 
-    if (await hasAssignmentConflict(startAt)) {
+    if (hasConflict) {
       return NextResponse.json({ error: "This time slot is already booked" }, { status: 409 });
     }
 
@@ -106,31 +123,58 @@ export async function POST(request: Request) {
       phone: companyUrl, // store URL in phone column (nullable varchar)
     });
 
+    let calendarResult: GoogleMeetCreationResult = {
+      eventId: null,
+      meetLink: null,
+      success: false,
+    };
     let emailsSent: boolean | null = null;
-    (async () => {
-      try {
-        const emailResult = await sendMeetingEmails({
-          clientName: meeting.name,
-          clientEmail: meeting.email,
-          startAt: new Date(meeting.startAt),
-          timezone: meeting.timezone,
-          projectSummary: meeting.projectSummary,
-          company: meeting.company ?? undefined,
-          companyUrl,
-          services,
-          budget,
-          projectStatus,
-          deadline,
-          guests,
-        });
-        emailsSent = !("skipped" in emailResult && emailResult.skipped);
-      } catch (emailError) {
-        console.error("Meeting saved but emails failed:", emailError);
-        emailsSent = false;
-      }
-    })();
 
-    return NextResponse.json({ meeting, emailsSent }, { status: 201 });
+    try {
+      const slotDurationMinutes = await getSlotDurationMinutes();
+      const meetingStartAt = new Date(meeting.startAt);
+      const meetingEndAt = addMinutes(meetingStartAt, slotDurationMinutes);
+
+      calendarResult = await createDiscoveryMeetingMeetLink({
+        startDateTime: meetingStartAt.toISOString(),
+        endDateTime: meetingEndAt.toISOString(),
+      });
+    } catch (calendarError) {
+      console.error("Meeting saved but Meet link generation failed:", calendarError);
+    }
+
+    try {
+      const emailResult = await sendMeetingEmails({
+        clientName: meeting.name,
+        clientEmail: meeting.email,
+        startAt: new Date(meeting.startAt),
+        timezone: meeting.timezone,
+        projectSummary: meeting.projectSummary,
+        company: meeting.company ?? undefined,
+        companyUrl,
+        services,
+        budget,
+        projectStatus,
+        deadline,
+        guests,
+        meetLink: calendarResult.meetLink ?? undefined,
+      });
+      emailsSent = !("skipped" in emailResult && emailResult.skipped);
+    } catch (emailError) {
+      console.error("Meeting saved but emails failed:", emailError);
+      emailsSent = false;
+    }
+
+    return NextResponse.json(
+      {
+        meeting,
+        emailsSent,
+        eventId: calendarResult.eventId,
+        meetLink: calendarResult.meetLink,
+        success: calendarResult.success,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Create meeting error:", error);
     const message = error instanceof Error ? error.message : "Failed to create meeting request";

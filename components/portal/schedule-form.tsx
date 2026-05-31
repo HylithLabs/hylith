@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import confetti from "canvas-confetti";
-import { Calendar, Check, ChevronDown, Plus, X } from "lucide-react";
+import { Calendar, Check, ChevronDown, Loader2, Plus, X } from "lucide-react";
 import {
   AppointmentScheduler,
   type TimeSlot,
@@ -451,8 +451,15 @@ export function ScheduleForm() {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedSlotIso, setSelectedSlotIso] = useState<string | null>(null);
 
-  const { data: daysData, error: daysError } = useBookableDays();
-  const { data: slotsData } = useSlotsForDay(selectedDateKey);
+  const {
+    data: daysData,
+    error: daysError,
+    isLoading: daysLoading,
+  } = useBookableDays();
+  const {
+    data: slotsData,
+    isLoading: slotsLoading,
+  } = useSlotsForDay(selectedDateKey);
 
   const bookableDays = daysData?.openDays ?? daysData?.bookableDays ?? [];
   const timezone = daysData?.timezone ?? slotsData?.timezone ?? "Asia/Dhaka";
@@ -553,6 +560,13 @@ export function ScheduleForm() {
         </div>
       ) : (
         <div className="space-y-3">
+          {(daysLoading || (selectedDateKey && slotsLoading)) && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              Loading availability...
+            </div>
+          )}
+
           <AppointmentScheduler
             userName="Hylith"
             meetingTitle="Discovery call"

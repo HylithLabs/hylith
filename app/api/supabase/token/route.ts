@@ -9,7 +9,13 @@ export async function GET() {
     return new NextResponse(null, { status: 204 });
   }
 
-  const session = await auth();
+  let session;
+  try {
+    session = await auth();
+  } catch (error) {
+    console.error("Auth session error in supabase token route:", error);
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

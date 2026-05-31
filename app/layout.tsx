@@ -33,10 +33,6 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  icons: {
-    icon: [{ url: "/assets/logo.svg", type: "image/svg+xml" }],
-    shortcut: ["/assets/logo.svg"],
-  },
   alternates: {
     canonical: "/",
   },
@@ -85,8 +81,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable, dmSans.variable)}>
-      <body className="min-h-screen bg-[#EEEEE8] antialiased">
+    <html
+      lang="en"
+      className={cn("font-sans", geist.variable, dmSans.variable)}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen bg-[#EEEEE8] antialiased" suppressHydrationWarning>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[#0F0B0A] focus:px-4 focus:py-2 focus:text-sm focus:text-[#EFEFED]"
@@ -94,14 +94,6 @@ export default function RootLayout({
           Skip to main content
         </a>
         <AuthSessionProvider>{children}</AuthSessionProvider>
-         
-
-        {/* <Script
-          src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
-          strategy="beforeInteractive"
-        /> */}
-
-        {/* <Script src="/scripts/liquidGL.js" strategy="afterInteractive" /> */}
       </body>
     </html>
   );

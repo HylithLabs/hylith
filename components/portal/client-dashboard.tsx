@@ -10,6 +10,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Loader2,
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ interface ClientDashboardProps {
   userName: string;
   meetings: MeetingItem[];
   className?: string;
+  isRefreshing?: boolean;
 }
 
 function AnimatedNumber({ value }: { value: number }) {
@@ -258,6 +260,7 @@ export function ClientDashboard({
   userName,
   meetings,
   className,
+  isRefreshing = false,
 }: ClientDashboardProps) {
   const pendingCount = meetings.filter((m) => m.status === "pending").length;
   const closedCount = meetings.filter((m) => m.status === "closed").length;
@@ -286,6 +289,12 @@ export function ClientDashboard({
         <p className="mt-2 text-lg text-muted-foreground">
           Here&apos;s an overview of your meetings and project status
         </p>
+        {isRefreshing ? (
+          <div className="mt-3 inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            Refreshing meetings...
+          </div>
+        ) : null}
       </motion.div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

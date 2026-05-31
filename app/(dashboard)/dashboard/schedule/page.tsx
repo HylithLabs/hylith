@@ -15,11 +15,15 @@ export default async function SchedulePage() {
     redirect("/login?callbackUrl=/dashboard/schedule");
   }
 
-  const dbUser = await findUserByEmail(session.user.email);
+  const [dbUser, pendingCount] = await Promise.all([
+    findUserByEmail(session.user.email),
+    session.user.id ? countPendingAssignments(session.user.id) : Promise.resolve(0),
+  ]);
   const clientId = dbUser?.id ?? session.user.id;
-  const pendingCount = await countPendingAssignments(clientId);
+  const finalPendingCount =
+    clientId === session.user.id ? pendingCount : await countPendingAssignments(clientId);
 
-  if (pendingCount > 0) {
+  if (finalPendingCount > 0) {
     return (
       <div className="space-y-6">
         <div>

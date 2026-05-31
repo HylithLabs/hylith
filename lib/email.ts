@@ -73,6 +73,7 @@ function clientHtml(params: {
   dateLabel: string;
   timeLabel: string;
   timezone: string;
+  meetLink?: string;
 }) {
   return baseHtml(`
     <p>Hi ${params.clientName},</p>
@@ -80,6 +81,7 @@ function clientHtml(params: {
     <div class="box">
       ${row("Date", params.dateLabel)}
       ${row("Time", `${params.timeLabel} (${params.timezone})`)}
+      ${row("Google Meet", params.meetLink, true)}
     </div>
     <p>We'll review your request and confirm within 24 hours. If you have any questions in the meantime, just reply to this email.</p>
     <p style="margin-top:24px;">— The Hylith Team</p>
@@ -100,6 +102,7 @@ function adminHtml(params: {
   deadline?: string;
   description: string;
   guests?: string[];
+  meetLink?: string;
 }) {
   const chipsHtml =
     params.services && params.services.length > 0
@@ -118,6 +121,7 @@ function adminHtml(params: {
       ${row("Email", params.clientEmail)}
       ${row("Date", params.dateLabel)}
       ${row("Time", `${params.timeLabel} (${params.timezone})`)}
+      ${row("Google Meet", params.meetLink, true)}
     </div>
     <hr class="divider" />
     <div class="box">
@@ -152,6 +156,7 @@ export async function sendMeetingEmails(params: {
   deadline?: string;
   guests?: string[];
   phone?: string;
+  meetLink?: string;
 }) {
   const dateLabel = formatDateLabel(params.startAt, params.timezone);
   const timeLabel = formatSlotLabel(params.startAt, params.timezone);
@@ -190,6 +195,7 @@ export async function sendMeetingEmails(params: {
       text: [
         `New booking from ${params.clientName} <${params.clientEmail}>`,
         `When: ${dateLabel} at ${timeLabel} (${params.timezone})`,
+        params.meetLink ? `Google Meet: ${params.meetLink}` : null,
         params.company ? `Company: ${params.company}` : null,
         companyUrl ? `URL: ${companyUrl}` : null,
         services?.length ? `Services: ${services.join(", ")}` : null,
@@ -215,6 +221,7 @@ export async function sendMeetingEmails(params: {
         deadline,
         description,
         guests,
+        meetLink: params.meetLink,
       }),
     });
 
@@ -236,12 +243,25 @@ export async function sendMeetingEmails(params: {
   const clientResult = await sendViaBrevo({
     to: [params.clientEmail],
     subject: "Discovery call request received — Hylith",
-    text: `Hi ${params.clientName},\n\nThanks for booking with Hylith. We received your request for:\n${dateLabel} at ${timeLabel} (${params.timezone})\n\nWe'll confirm within 24 hours. Questions? Reply to this email.\n\n— The Hylith Team`,
+    text: [
+      `Hi ${params.clientName},`,
+      "",
+      "Thanks for booking with Hylith. We received your request for:",
+      `${dateLabel} at ${timeLabel} (${params.timezone})`,
+      params.meetLink ? `Google Meet: ${params.meetLink}` : null,
+      "",
+      "We'll confirm within 24 hours. Questions? Reply to this email.",
+      "",
+      "— The Hylith Team",
+    ]
+      .filter((line) => line !== null)
+      .join("\n"),
     html: clientHtml({
       clientName: params.clientName,
       dateLabel,
       timeLabel,
       timezone: params.timezone,
+      meetLink: params.meetLink,
     }),
   });
 
