@@ -106,7 +106,7 @@ async function createEventWithRetry(
 
       const meetLink = event.data.conferenceData?.entryPoints?.find(
         (entryPoint) => entryPoint.entryPointType === "video",
-      )?.uri ?? null;
+      )?.uri ?? event.data.hangoutLink ?? null;
 
       const hasMeet = event.data.conferenceData?.entryPoints?.some(
         (entryPoint) => entryPoint.entryPointType === "video",

@@ -139,6 +139,12 @@ export async function POST(request: Request) {
         startDateTime: meetingStartAt.toISOString(),
         endDateTime: meetingEndAt.toISOString(),
       });
+      console.log("[meetings] Google Meet generation result", {
+        meetingId: meeting._id,
+        eventId: calendarResult.eventId,
+        meetLink: calendarResult.meetLink,
+        success: calendarResult.success,
+      });
     } catch (calendarError) {
       console.error("Meeting saved but Meet link generation failed:", calendarError);
     }
