@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AnimatePresence, motion } from "motion/react";
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -199,7 +198,10 @@ function GoogleButton({
       variant="outline"
       className="h-12 w-full border-zinc-300 hover:bg-zinc-50"
       disabled={disabled}
-      onClick={() => signIn("google", { callbackUrl })}
+      onClick={() => {
+        // Implement Google OAuth later
+        window.location.href = `http://localhost:4000/api/v1/auth/google/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+      }}
     >
       <GoogleIcon className="mr-2 size-5" />
       Continue with Google
@@ -240,13 +242,20 @@ function SignInForm({
     setError(null);
     setIsLoading(true);
     try {
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+      const result = await fetch(`${backendUrl}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+        credentials: "include",
       });
 
-      if (result?.error) {
+      if (!result.ok) {
         setError("Invalid email or password");
         return;
       }
@@ -429,7 +438,8 @@ function SignUpForm({ callbackUrl, onSwitchToSignIn }: SignUpFormProps) {
     setError(null);
     setIsLoading(true);
     try {
-      const res = await fetch("/api/auth/register", {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+      const res = await fetch(`${backendUrl}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -451,13 +461,20 @@ function SignUpForm({ callbackUrl, onSwitchToSignIn }: SignUpFormProps) {
         return;
       }
 
-      const signInResult = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
+      // Automatically sign in after registration
+      const signInResult = await fetch(`${backendUrl}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+        credentials: "include",
       });
 
-      if (signInResult?.error) {
+      if (!signInResult.ok) {
         setError("Account created but sign-in failed. Try logging in.");
         return;
       }

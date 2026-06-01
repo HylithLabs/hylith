@@ -10,7 +10,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+
 import { scrollToAnchor, scrollToTop } from "@/lib/smooth-scroll-anchor";
 import { isAdminEmail } from "@/lib/admin";
 
@@ -46,7 +46,23 @@ const GLASS_STYLE = {
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const [session, setSession] = useState<{ user?: { email: string } } | null>(null);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+        const res = await fetch(`${backendUrl}/users/me`, { credentials: "include" });
+        if (res.ok) {
+          const user = await res.json();
+          setSession({ user });
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+    fetchSession();
+  }, []);
 
   const isUserAdmin = session?.user?.email ? isAdminEmail(session.user.email) : false;
   const dashboardHref = isUserAdmin ? "/admin" : "/dashboard";

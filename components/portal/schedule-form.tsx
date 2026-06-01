@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+
 import confetti from "canvas-confetti";
 import { Calendar, Check, ChevronDown, Loader2, Plus, X } from "lucide-react";
 import {
@@ -444,7 +444,21 @@ function BookingFormPanel({
 
 export function ScheduleForm() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const [session, setSession] = useState<{ user?: { email: string; name?: string } } | null>(null);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+        const res = await fetch(`${backendUrl}/users/me`, { credentials: "include" });
+        if (res.ok) {
+          const user = await res.json();
+          setSession({ user });
+        }
+      } catch (err) {}
+    };
+    fetchSession();
+  }, []);
 
   const [view, setView] = useState<"picker" | "form">("picker");
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);

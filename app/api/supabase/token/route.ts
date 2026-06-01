@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth-bff";
 import { isAdminEmail } from "@/lib/admin";
 import { isSupabaseConfigured, getSupabaseJwtSecret } from "@/lib/supabase/config";
 import { signSupabaseAccessToken } from "@/lib/supabase/jwt";
