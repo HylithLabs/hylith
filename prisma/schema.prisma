@@ -1,0 +1,159 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum RoleType {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum MeetingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String      @unique
+  name         String?
+  passwordHash String?     @map("password_hash")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  deletedAt    DateTime?   @map("deleted_at")
+
+  sessions     Session[]
+  userRoles    UserRole[]
+  auditLogs    AuditLog[]
+  meetings     Meeting[]
+  availabilities Availability[]
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Session {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  refreshTokenHash String   @unique @map("refresh_token_hash")
+  deviceInfo       String?  @map("device_info")
+  ipAddress        String?  @map("ip_address")
+  lastActive       DateTime @default(now()) @map("last_active")
+  expiresAt        DateTime @map("expires_at")
+  tokenVersion     Int      @default(1) @map("token_version")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshTokenHash])
+  @@map("sessions")
+}
+
+model Role {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            RoleType         @unique
+  description     String?
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String           @unique
+  description     String?
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id") @db.Uuid
+  permissionId String     @map("permission_id") @db.Uuid
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String
+  entityId   String?  @map("entity_id") @db.Uuid
+  entityType String?  @map("entity_type")
+  oldValue   Json?    @map("old_value")
+  newValue   Json?    @map("new_value")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Meeting {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId           String?       @map("client_id") @db.Uuid
+  clientName         String        @map("client_name")
+  clientEmail        String        @map("client_email")
+  meetingDate        DateTime      @map("meeting_date")
+  duration           Int           @default(30)
+  status             MeetingStatus @default(PENDING)
+  projectDescription String?       @map("project_description")
+  googleEventId      String?       @map("google_event_id")
+  meetLink           String?       @map("meet_link")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  deletedAt          DateTime?     @map("deleted_at")
+
+  client             User?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([meetingDate])
+  @@index([deletedAt])
+  @@map("meetings")
+}
+
+model Availability {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  availableDays   Int[]    @map("available_days")
+  timeSlots       Json     @map("time_slots") // e.g. [{"start": "09:00", "end": "17:00"}]
+  meetingDuration Int      @default(30) @map("meeting_duration")
+  leadTime        Int      @default(24) @map("lead_time")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@map("availability")
+}
