@@ -230,7 +230,7 @@ export async function sendMeetingEmails(params: {
       subject: `New discovery call — ${params.clientName}`,
       success: adminResult.success,
       errorMessage: adminResult.error,
-      metadata: { provider: "brevo", type: "admin_notification" },
+      metadata: { provider: "resend", type: "admin_notification" },
     });
 
     if (!adminResult.success) {
@@ -270,7 +270,7 @@ export async function sendMeetingEmails(params: {
     subject: "Discovery call request received — Hylith",
     success: clientResult.success,
     errorMessage: clientResult.error,
-    metadata: { provider: "brevo", type: "client_confirmation" },
+    metadata: { provider: "resend", type: "client_confirmation" },
   });
 
   if (!clientResult.success) {

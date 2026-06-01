@@ -20,7 +20,7 @@ export async function sendEmail(
     subject,
     success: result.success,
     errorMessage: result.error,
-    metadata: { provider: "brevo" },
+    metadata: { provider: "resend" },
   });
 
   return result;
@@ -36,7 +36,7 @@ export async function sendBulkEmail(
 
   if (unique.length === 0) return { sent: 0, failed: [], skipped: true };
 
-  // Send one API call with all recipients (Brevo supports up to 50 `to` per call)
+  // Send one API call with all recipients.
   const result = await sendViaBrevo({
     to: unique,
     subject: payload.subject,
@@ -49,7 +49,7 @@ export async function sendBulkEmail(
     subject: payload.subject,
     success: result.success,
     errorMessage: result.error,
-    metadata: { provider: "brevo", count: unique.length },
+    metadata: { provider: "resend", count: unique.length },
   });
 
   return result.success

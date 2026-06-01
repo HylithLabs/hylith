@@ -83,6 +83,7 @@ html {
   -webkit-font-smoothing: antialiased;
   font-optical-sizing: auto;
   background-color: #EEEEE8;
+  position: relative;
   max-width: 100%;
   overflow-x: clip;
 }
@@ -93,6 +94,7 @@ html {
 
 body {
   background-color: #EEEEE8;
+  position: relative;
   max-width: 100%;
   overflow-x: clip;
 }
