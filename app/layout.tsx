@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import { ogImageMetadata, ogImageUrl, siteConfig } from "./site-config";
 import "./globals.css";
 import { Geist } from "next/font/google";
@@ -93,6 +94,16 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-4FPL6SNFRP"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-4FPL6SNFRP');`}
+        </Script>
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>
     </html>
