@@ -108,7 +108,7 @@ function MeetingCard({
       transition={{ delay: index * 0.1, duration: 0.3 }}
     >
       <Card className="border-border transition-shadow duration-200 hover:shadow-md">
-        <CardContent className="p-6">
+        <CardContent className="p-5 lg:p-6">
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
@@ -139,12 +139,10 @@ function StatCard({
   title,
   value,
   icon: Icon,
-  delay = 0,
 }: {
   title: string;
   value: number;
   icon: React.ElementType;
-  delay?: number;
 }) {
   const cardRef = React.useRef<HTMLDivElement>(null);
 
@@ -276,13 +274,12 @@ export function ClientDashboard({
 
   return (
     <motion.div
-      className={cn("mx-auto w-full space-y-8", className)}
+      className={cn("w-full space-y-8", className)}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div
-      >
+      <motion.div className="space-y-2">
         <h1 className="font-[family-name:var(--font-dm-sans)] text-4xl font-bold tracking-tight text-foreground md:text-5xl">
           Welcome back, {userName}
         </h1>
@@ -297,41 +294,47 @@ export function ClientDashboard({
         ) : null}
       </motion.div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <StatCard
-          title="Pending Meetings"
-          value={pendingCount}
-          icon={AlertCircle}
-        />
-        <StatCard
-          title="Closed Meetings"
-          value={closedCount}
-          icon={CheckCircle2}
-        />
-      </div>
-
-      <CtaCard disabled={hasPendingMeeting} />
-
-      <div className="space-y-4">
-        <h2 className="font-[family-name:var(--font-dm-sans)] text-2xl font-bold tracking-[-0.02em] text-foreground">
-          Your Meetings
-        </h2>
-        {meetings.length === 0 ? (
-          <Card className="border-border">
-            <CardContent className="p-8 text-center text-muted-foreground">
-              <p>No meetings scheduled yet</p>
-              <Button asChild className="mt-4 rounded-full">
-                <Link href="/dashboard/schedule">Schedule your first call</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {meetings.map((meeting, index) => (
-              <MeetingCard key={meeting._id} meeting={meeting} index={index} />
-            ))}
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            <StatCard
+              title="Pending Meetings"
+              value={pendingCount}
+              icon={AlertCircle}
+            />
+            <StatCard
+              title="Closed Meetings"
+              value={closedCount}
+              icon={CheckCircle2}
+            />
           </div>
-        )}
+
+          <CtaCard disabled={hasPendingMeeting} />
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="font-[family-name:var(--font-dm-sans)] text-2xl font-bold tracking-[-0.02em] text-foreground">
+            Your Meetings
+          </h2>
+          {meetings.length === 0 ? (
+            <Card className="border-border">
+              <CardContent className="p-8 text-center text-muted-foreground">
+                <p>No meetings scheduled yet</p>
+                <Button asChild className="mt-4 rounded-full">
+                  <Link href="/dashboard/schedule">
+                    Schedule your first call
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {meetings.map((meeting, index) => (
+                <MeetingCard key={meeting._id} meeting={meeting} index={index} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );

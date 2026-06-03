@@ -12,5 +12,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
       images: [ogImageUrl()],
     },
+    {
+      url: absoluteUrl("/privacy-policy"),
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.3,
+      images: [ogImageUrl()],
+    },
+    {
+      url: absoluteUrl("/terms-and-conditions"),
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.3,
+      images: [ogImageUrl()],
+    },
   ];
 }

@@ -45,7 +45,7 @@ export function ClientDashboardLive({
     <div className="relative" style={showLoading ? { paddingTop: "3.25rem" } : undefined}>
       {showLoading ? (
         <div className="fixed left-0 right-0 top-0 z-50 border-b border-border bg-background/95 px-4 py-3 text-sm text-foreground shadow-sm backdrop-blur">
-          <div className="mx-auto flex max-w-7xl items-center gap-2">
+          <div className="flex w-full items-center gap-2 px-0 sm:px-2 lg:px-4">
             <Loader2 className="size-5 animate-spin" />
             Loading meetings...
           </div>

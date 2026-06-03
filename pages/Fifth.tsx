@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -225,7 +226,21 @@ const Fifth = () => {
 
                 <div className="text-[0.72rem] tracking-[0.02em] text-[#EFEFED]/52">
                   <p>© Hylith 2026</p>
-                  <p>Privacy | Terms And Conditions</p>
+                  <p className="flex flex-wrap gap-x-2 gap-y-1">
+                    <Link
+                      className="transition hover:text-[#EFEFED]"
+                      href="/privacy-policy"
+                    >
+                      Privacy
+                    </Link>
+                    <span>|</span>
+                    <Link
+                      className="transition hover:text-[#EFEFED]"
+                      href="/terms-and-conditions"
+                    >
+                      Terms And Conditions
+                    </Link>
+                  </p>
                 </div>
               </div>
             </div>
