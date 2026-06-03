@@ -81,7 +81,7 @@ export default function RootLayout({
       style={{ ["--font-sans" as string]: "var(--font-dm-sans)" }}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-[#EEEEE8] antialiased" suppressHydrationWarning>
+      <body className="min-h-screen bg-[#EFEFED] antialiased" suppressHydrationWarning>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[#0F0B0A] focus:px-4 focus:py-2 focus:text-sm focus:text-[#EFEFED]"

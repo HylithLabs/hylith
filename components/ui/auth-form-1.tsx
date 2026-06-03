@@ -48,7 +48,7 @@ interface AuthProps extends React.ComponentProps<"div"> {
 }
 
 const BRAND_BG = "#0F0B0A";
-const PAGE_BG = "#EEEEE8";
+const PAGE_BG = "#EFEFED";
 
 function BrandPanel() {
   return (

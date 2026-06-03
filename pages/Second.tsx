@@ -201,8 +201,8 @@ const Second = () => {
           ...COLLAPSED,
           transformOrigin: "center center",
         });
-        gsap.set(".second-copy", { color: "#EEEEE8" });
-        gsap.set(".second-link", { borderColor: "#EEEEE8" });
+        gsap.set(".second-copy", { color: "#EFEFED" });
+        gsap.set(".second-link", { borderColor: "#EFEFED" });
 
         const approach = gsap.timeline({
           scrollTrigger: {

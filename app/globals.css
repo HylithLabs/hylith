@@ -82,7 +82,7 @@ html {
   font-family: var(--font-dm-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   font-optical-sizing: auto;
-  background-color: #EEEEE8;
+  background-color: #EFEFED;
   position: relative;
   max-width: 100%;
   overflow-x: clip;
@@ -93,7 +93,7 @@ html {
 }
 
 body {
-  background-color: #EEEEE8;
+  background-color: #EFEFED;
   position: relative;
   max-width: 100%;
   overflow-x: clip;
