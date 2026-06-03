@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MarketingPage from "@/components/seo/MarketingPage";
+import { discoveryMeetingHref } from "@/app/site-config";
 import { getServicePage } from "@/lib/seo/content";
 import { marketingPageMetadata } from "@/lib/seo/metadata";
 
@@ -21,8 +22,9 @@ export default function WebAppDevelopmentPage() {
       keywordFocus={page.keywordFocus}
       sections={page.sections}
       relatedLinks={page.relatedLinks}
+      faqItems={page.faqItems}
       ctaLabel={page.ctaLabel}
-      ctaHref="/contact"
+      ctaHref={discoveryMeetingHref}
       footerNote="Web application projects work best when product thinking and delivery live in the same room from the start."
     />
   );

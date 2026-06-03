@@ -27,6 +27,8 @@ export const siteContact = {
   email: "hello@hylith.com",
 } as const;
 
+export const discoveryMeetingHref = "/signup?callbackUrl=/dashboard/schedule" as const;
+
 export const siteServices = [
   {
     name: "Web application development",

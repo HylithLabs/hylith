@@ -4,7 +4,7 @@ import React, { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { HiArrowLongRight } from "react-icons/hi2";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -323,14 +323,14 @@ const Second = () => {
               className="second-link second-copy flex h-7 min-w-30 cursor-pointer items-center justify-between gap-3 border-b-2 border-[#0F0B0A] text-[0.95rem] font-medium"
             >
               <span>Our Work</span>
-              <HiArrowLongRight size={24} className="shrink-0" />
+              <ArrowRight size={24} className="shrink-0" />
             </a>
             <a
               href="/signup?callbackUrl=/dashboard/schedule"
               className="second-link second-copy flex h-7 min-w-30 cursor-pointer items-center justify-between gap-3 border-b-2 border-[#0F0B0A] text-[0.95rem] font-medium"
             >
               <span>Discuss</span>
-              <HiArrowLongRight size={24} className="shrink-0" />
+              <ArrowRight size={24} className="shrink-0" />
             </a>
           </div>
         </div>
@@ -342,14 +342,14 @@ const Second = () => {
             className="second-link second-copy pointer-events-auto absolute bottom-0 left-[56%] flex h-7 min-w-30 -translate-x-1/2 cursor-pointer items-center justify-between gap-4 border-b-2 border-[#0F0B0A] text-[0.95rem] font-medium"
           >
             <span>Our Work</span>
-            <HiArrowLongRight size={24} className="shrink-0" />
+            <ArrowRight size={24} className="shrink-0" />
           </a>
           <a
             href="/signup?callbackUrl=/dashboard/schedule"
             className="second-link second-copy pointer-events-auto absolute right-0 bottom-0 flex h-7 min-w-30 cursor-pointer items-center justify-between gap-4 border-b-2 border-[#0F0B0A] text-[0.95rem] font-medium"
           >
             <span>Discuss</span>
-            <HiArrowLongRight size={24} className="shrink-0" />
+            <ArrowRight size={24} className="shrink-0" />
           </a>
         </div>
       </div>

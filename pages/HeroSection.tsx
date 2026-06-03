@@ -1,10 +1,7 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-const DISCUSS_HREF = "/signup?callbackUrl=/dashboard/schedule";
+import { discoveryMeetingHref } from "@/app/site-config";
 
 const glassBadgeStyle = {
   letterSpacing: "0",
@@ -89,25 +86,22 @@ function RevealClip({
 function DiscussCta({ className = "" }: { className?: string }) {
   return (
     <Link
-      href={DISCUSS_HREF}
+      href={discoveryMeetingHref}
       className={[
-        "hero-badge z-50 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[0.95rem] font-semibold leading-none sm:h-13 lg:h-11 lg:w-auto lg:max-w-none lg:px-5 lg:text-sm lg:whitespace-nowrap xl:h-16 xl:px-10 xl:text-[1.09rem]",
+        "hero-badge group z-50 inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-semibold leading-none sm:h-13 lg:h-11 lg:w-auto lg:max-w-none lg:px-5 lg:text-sm lg:whitespace-nowrap xl:h-16 xl:px-10 xl:text-[1.09rem]",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
       style={glassBadgeStyle}
     >
+      <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_0_0_rgba(16,185,129,0.55)] animate-pulse" />
       Discuss Your System
     </Link>
   );
 }
 
-interface HeroSectionProps {
-  isLoaded?: boolean;
-}
-
-const HeroSection = ({ isLoaded = true }: HeroSectionProps) => {
+const HeroSection = () => {
   return (
     <section
       className="hero section overflow-hidden px-4 pb-10 sm:px-6 sm:pb-12 lg:px-4 lg:pb-8 xl:px-0"

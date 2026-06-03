@@ -1,18 +1,8 @@
-"use client";
-
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  type MouseEvent,
-} from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { scrollToAnchor, scrollToTop } from "@/lib/smooth-scroll-anchor";
+import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
+import NavbarMenu from "@/components/NavbarMenu";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -20,15 +10,14 @@ const NAV_LINKS = [
   { label: "Works", href: "#what-we-do" },
   { label: "Team", href: "#team" },
   { label: "Reviews", href: "#reviews" },
-];
+] as const;
 
-type NavItem = {
+export type NavItem = {
   label: string;
   href: string;
   isDashboard: boolean;
 };
 
-/** Shared glass style for both desktop pill and mobile menu */
 const GLASS_STYLE = {
   background: "rgba(255, 255, 255, 0.4)",
   backdropFilter: "blur(16px)",
@@ -43,76 +32,31 @@ const GLASS_STYLE = {
   `,
 } as const;
 
-const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const { data: session } = useSession();
-
-  const isUserAdmin = session?.user?.email ? isAdminEmail(session.user.email) : false;
+export default async function Navbar() {
+  const session = await auth();
+  const isUserAdmin = session?.user?.email
+    ? isAdminEmail(session.user.email)
+    : false;
   const dashboardHref = isUserAdmin ? "/admin" : "/dashboard";
 
-  const navItems = useMemo((): NavItem[] => {
-    const items: NavItem[] = NAV_LINKS.map((link) => ({
-      ...link,
-      isDashboard: false,
-    }));
-    if (!session) return items;
+  const navItems: NavItem[] = NAV_LINKS.map((link) => ({
+    ...link,
+    isDashboard: false,
+  }));
 
-    const teamIndex = items.findIndex((link) => link.label === "Team");
-    const insertAt = teamIndex === -1 ? items.length : teamIndex + 1;
-    items.splice(insertAt, 0, {
+  if (session?.user?.id) {
+    const teamIndex = navItems.findIndex((link) => link.label === "Team");
+    const insertAt = teamIndex === -1 ? navItems.length : teamIndex + 1;
+    navItems.splice(insertAt, 0, {
       label: "Dashboard",
       href: dashboardHref,
       isDashboard: true,
     });
-    return items;
-  }, [session, dashboardHref]);
-
-  /* Lock body scroll when mobile menu is open */
-  useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [menuOpen]);
-
-  /* Close menu on resize past mobile breakpoint */
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const handler = (e: MediaQueryListEvent) => {
-      if (e.matches) setMenuOpen(false);
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
-
-  const handleNavClick = useCallback(
-    (href: string) => (event: MouseEvent<HTMLAnchorElement>) => {
-      if (href.startsWith("#")) {
-        event.preventDefault();
-        scrollToAnchor(href);
-        closeMenu();
-        return;
-      }
-
-      if (href === "/" && pathname === "/") {
-        event.preventDefault();
-        scrollToTop();
-        closeMenu();
-      }
-    },
-    [closeMenu, pathname],
-  );
+  }
 
   return (
-    <>
-      <nav className="top-0 left-0 z-50 flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-4 px-4 py-4 sm:px-8 sm:py-5 lg:flex-nowrap lg:px-12 xl:px-18 xl:py-6">
+    <nav className="top-0 left-0 z-50 flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-4 px-4 py-4 sm:px-8 sm:py-5 lg:flex-nowrap lg:px-12 xl:px-18 xl:py-6">
+      <Link href="/" aria-label="Hylith home">
         <Image
           className="h-auto w-[105px] sm:w-[118px] xl:w-[125px]"
           src="/assets/logo.svg"
@@ -121,96 +65,28 @@ const Navbar = () => {
           height={40}
           priority
         />
+      </Link>
 
-        {/* ── Desktop nav pill (hidden on mobile) ── */}
-        <div
-          style={GLASS_STYLE}
-          className="nav relative order-2 hidden h-11 min-w-0 items-center justify-between gap-3 rounded-full px-4 text-xs font-semibold sm:h-12 sm:gap-5 sm:px-6 sm:text-sm md:order-none md:flex md:w-auto md:justify-start xl:h-14 xl:gap-8 xl:px-10"
-        >
-          {navItems.map((link) => (
-            <Link
-              key={link.label}
-              className={
-                link.isDashboard
-                  ? "cursor-pointer font-medium text-blue-600 transition hover:opacity-70"
-                  : "cursor-pointer font-medium transition hover:opacity-70"
-              }
-              href={link.href}
-              onClick={handleNavClick(link.href)}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* ── Hamburger button (visible on mobile only) ── */}
-        <button
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
-          className="relative z-[60] flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full md:hidden"
-          style={GLASS_STYLE}
-        >
-          {/* Top bar */}
-          <span
-            className="block h-[2px] w-[18px] rounded-full bg-[#0F0B0A] transition-all duration-300"
-            style={{
-              transform: menuOpen
-                ? "translateY(3.5px) rotate(45deg)"
-                : "none",
-            }}
-          />
-          {/* Bottom bar */}
-          <span
-            className="block h-[2px] w-[18px] rounded-full bg-[#0F0B0A] transition-all duration-300"
-            style={{
-              transform: menuOpen
-                ? "translateY(-3.5px) rotate(-45deg)"
-                : "none",
-            }}
-          />
-        </button>
-      </nav>
-
-      {/* ── Mobile fullscreen menu overlay ── */}
       <div
-        className={`fixed inset-0 z-[55] flex flex-col items-center justify-center transition-all duration-500 md:pointer-events-none md:hidden ${
-          menuOpen
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0"
-        }`}
-        style={{
-          background: "rgba(238, 238, 232, 0.92)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-        }}
+        style={GLASS_STYLE}
+        className="nav relative order-2 hidden h-11 min-w-0 items-center justify-between gap-3 rounded-full px-4 text-xs font-semibold sm:h-12 sm:gap-5 sm:px-6 sm:text-sm md:order-none md:flex md:w-auto md:justify-start xl:h-14 xl:gap-8 xl:px-10"
       >
-        <nav className="flex flex-col items-center gap-8">
-          {navItems.map((link, i) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              onClick={link.isDashboard ? closeMenu : handleNavClick(link.href)}
-              className={
-                link.isDashboard
-                  ? "text-3xl font-semibold tracking-[-0.02em] text-blue-600 transition-all duration-300 hover:opacity-60 sm:text-4xl"
-                  : "text-3xl font-semibold tracking-[-0.02em] text-[#0F0B0A] transition-all duration-300 hover:opacity-60 sm:text-4xl"
-              }
-              style={{
-                transform: menuOpen
-                  ? "translateY(0)"
-                  : `translateY(${20 + i * 8}px)`,
-                opacity: menuOpen ? 1 : 0,
-                transitionDelay: menuOpen ? `${100 + i * 60}ms` : "0ms",
-              }}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        {navItems.map((link) => (
+          <Link
+            key={link.label}
+            className={
+              link.isDashboard
+                ? "cursor-pointer font-medium text-blue-600 transition hover:opacity-70"
+                : "cursor-pointer font-medium transition hover:opacity-70"
+            }
+            href={link.href}
+          >
+            {link.label}
+          </Link>
+        ))}
       </div>
-    </>
-  );
-};
 
-export default Navbar;
+      <NavbarMenu navItems={navItems} />
+    </nav>
+  );
+}

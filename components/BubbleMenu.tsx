@@ -184,7 +184,7 @@ export default function BubbleMenu({
                   key={item.label}
                   href={item.href}
                   aria-label={item.ariaLabel ?? item.label}
-                  onClick={() => handleItemClick(item)}
+                  onClick={(event) => handleItemClick(item, event)}
                   className="pointer-events-auto absolute left-1/2 top-1/2 inline-flex h-14 min-w-28 items-center justify-center rounded-full px-4 text-sm font-semibold shadow-[0_8px_24px_-10px_rgba(0,0,0,0.24)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.04] focus:outline-none focus:ring-2 focus:ring-black/20"
                   style={{
                     backgroundColor: item.hoverStyles?.bgColor ?? (isDashboard ? "#2563eb" : "#0f0b0a"),

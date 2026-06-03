@@ -1,9 +1,17 @@
 import type { NextConfig } from "next";
 import path from "node:path";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
+  },
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
   },
   async redirects() {
     return [
@@ -21,4 +29,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

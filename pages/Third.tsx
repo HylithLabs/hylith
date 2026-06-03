@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 import { TextReveal } from "@/components/ui/text-reveal"
 const Third = () => {
   return (

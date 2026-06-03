@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { RelatedLink, SeoSection } from "@/lib/seo/content";
+import FAQ from "@/components/FAQ";
+import type { FAQItem, RelatedLink, SeoSection } from "@/lib/seo/content";
 
 type MarketingPageProps = {
   eyebrow: string;
@@ -9,6 +10,7 @@ type MarketingPageProps = {
   keywordFocus: string;
   sections: readonly SeoSection[];
   relatedLinks: readonly RelatedLink[];
+  faqItems?: readonly FAQItem[];
   ctaLabel: string;
   ctaHref: string;
   footerNote?: string;
@@ -21,6 +23,7 @@ export default function MarketingPage({
   keywordFocus,
   sections,
   relatedLinks,
+  faqItems,
   ctaLabel,
   ctaHref,
   footerNote,
@@ -128,6 +131,8 @@ export default function MarketingPage({
             ) : null}
           </aside>
         </article>
+
+        {faqItems?.length ? <FAQ items={faqItems} /> : null}
       </div>
     </main>
   );

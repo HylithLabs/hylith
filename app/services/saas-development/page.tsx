@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MarketingPage from "@/components/seo/MarketingPage";
+import { discoveryMeetingHref } from "@/app/site-config";
 import { getServicePage } from "@/lib/seo/content";
 import { marketingPageMetadata } from "@/lib/seo/metadata";
 
@@ -21,8 +22,9 @@ export default function SaaSDevelopmentPage() {
       keywordFocus={page.keywordFocus}
       sections={page.sections}
       relatedLinks={page.relatedLinks}
+      faqItems={page.faqItems}
       ctaLabel={page.ctaLabel}
-      ctaHref="/contact"
+      ctaHref={discoveryMeetingHref}
       footerNote="A SaaS platform usually gets easier to sell when the foundation is simple, visible, and ready for measured growth."
     />
   );

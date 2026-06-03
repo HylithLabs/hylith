@@ -1,3 +1,5 @@
+import { discoveryMeetingHref } from "@/app/site-config";
+
 export type SeoSection = {
   heading: string;
   paragraphs: readonly string[];
@@ -6,6 +8,11 @@ export type SeoSection = {
 export type RelatedLink = {
   label: string;
   href: string;
+};
+
+export type FAQItem = {
+  question: string;
+  answer: string;
 };
 
 export type ServicePageData = {
@@ -18,6 +25,7 @@ export type ServicePageData = {
   secondaryKeywords: readonly string[];
   sections: readonly SeoSection[];
   relatedLinks: readonly RelatedLink[];
+  faqItems: readonly FAQItem[];
   ctaLabel: string;
 };
 
@@ -73,7 +81,24 @@ export const servicePages: readonly ServicePageData[] = [
     relatedLinks: [
       { label: "Custom software development", href: "/services/custom-software-development" },
       { label: "SaaS development", href: "/services/saas-development" },
-      { label: "Contact Hylith", href: "/contact" },
+      { label: "Book a discovery call", href: discoveryMeetingHref },
+    ],
+    faqItems: [
+      {
+        question: "How long does it take to build a web application?",
+        answer:
+          "A focused web app MVP can take a few weeks, while more complex builds with admin tools, integrations, or custom workflows usually take longer. Scope, design depth, and delivery speed all affect the timeline.",
+      },
+      {
+        question: "How much does custom web app development cost?",
+        answer:
+          "Custom web app development cost depends on the number of features, backend complexity, and integration requirements. A clear first release keeps the budget more predictable and reduces rework.",
+      },
+      {
+        question: "What technologies do you use for web apps?",
+        answer:
+          "We usually choose a stack built around Next.js, React, TypeScript, and a Node.js backend when that fits the product. The exact setup depends on whether the app is public-facing, internal, or SaaS-based.",
+      },
     ],
     ctaLabel: "Talk about web application development",
   },
@@ -110,7 +135,24 @@ export const servicePages: readonly ServicePageData[] = [
     relatedLinks: [
       { label: "Backend development services", href: "/services/backend-development" },
       { label: "API development company", href: "/services/api-development" },
-      { label: "Contact Hylith", href: "/contact" },
+      { label: "Book a discovery call", href: discoveryMeetingHref },
+    ],
+    faqItems: [
+      {
+        question: "What is custom software development for businesses?",
+        answer:
+          "Custom software development builds tools around your workflow instead of forcing your team into a generic product. It works well for internal systems, client portals, and process automation.",
+      },
+      {
+        question: "Is custom software more expensive than off-the-shelf tools?",
+        answer:
+          "The upfront cost is often higher, but custom software can reduce long-term friction, license fees, and manual work. It tends to pay off when the process is unique or the business has outgrown standard tools.",
+      },
+      {
+        question: "Can you build software that matches our existing process?",
+        answer:
+          "Yes. We map the current workflow first, then shape the software around how your team already works so adoption stays easier and training time stays low.",
+      },
     ],
     ctaLabel: "Discuss custom software",
   },
@@ -147,7 +189,24 @@ export const servicePages: readonly ServicePageData[] = [
     relatedLinks: [
       { label: "MVP development services", href: "/services/mvp-development" },
       { label: "Backend development services", href: "/services/backend-development" },
-      { label: "Contact Hylith", href: "/contact" },
+      { label: "Book a discovery call", href: discoveryMeetingHref },
+    ],
+    faqItems: [
+      {
+        question: "How do you build a SaaS product from scratch?",
+        answer:
+          "We start with the core user journey, define the MVP scope, and build the frontend, backend, auth, billing, and admin foundations together. That keeps the first release usable and ready to evolve.",
+      },
+      {
+        question: "What is the cost of SaaS development?",
+        answer:
+          "SaaS development cost depends on subscription logic, user roles, onboarding, payments, and integrations. A lean MVP is usually the best way to control cost while validating demand.",
+      },
+      {
+        question: "Can you help with MVP to full SaaS scaling?",
+        answer:
+          "Yes. We can take a startup from MVP development into a fuller SaaS platform by keeping the codebase modular, the APIs stable, and the roadmap aligned with real user feedback.",
+      },
     ],
     ctaLabel: "Plan a SaaS build",
   },
@@ -184,7 +243,24 @@ export const servicePages: readonly ServicePageData[] = [
     relatedLinks: [
       { label: "SaaS development", href: "/services/saas-development" },
       { label: "Web application development", href: "/services/web-app-development" },
-      { label: "Contact Hylith", href: "/contact" },
+      { label: "Book a discovery call", href: discoveryMeetingHref },
+    ],
+    faqItems: [
+      {
+        question: "What is included in an MVP?",
+        answer:
+          "An MVP usually includes the core feature set, essential onboarding, the main user flow, and the minimum backend needed to test the idea. It leaves out features that do not help validate the product.",
+      },
+      {
+        question: "How fast can you build an MVP?",
+        answer:
+          "A focused MVP can often be built in a few weeks if the scope is tight and decisions are quick. More complex startup products may need extra time for design, data modeling, or integrations.",
+      },
+      {
+        question: "Why is MVP important for startups?",
+        answer:
+          "MVP development helps startups prove demand before investing in a full build. It shortens feedback loops and makes it easier to refine the product based on real usage.",
+      },
     ],
     ctaLabel: "Scope an MVP",
   },
@@ -221,7 +297,24 @@ export const servicePages: readonly ServicePageData[] = [
     relatedLinks: [
       { label: "API development", href: "/services/api-development" },
       { label: "Custom software development", href: "/services/custom-software-development" },
-      { label: "Contact Hylith", href: "/contact" },
+      { label: "Book a discovery call", href: discoveryMeetingHref },
+    ],
+    faqItems: [
+      {
+        question: "What is scalable backend architecture?",
+        answer:
+          "Scalable backend architecture keeps data flow, service boundaries, and deployment structure easy to extend as usage grows. It is designed to stay reliable before and after product traction.",
+      },
+      {
+        question: "Do you build REST and GraphQL APIs?",
+        answer:
+          "Yes. We can build REST APIs, GraphQL APIs, or a hybrid setup depending on the product and team needs. The best choice usually depends on how the frontend and integrations will use the data.",
+      },
+      {
+        question: "How do you handle database design?",
+        answer:
+          "We start with the domain model, define relationships clearly, and design the database for performance, reporting, and future growth. Good database design makes backend development much easier to maintain.",
+      },
     ],
     ctaLabel: "Review backend architecture",
   },
@@ -258,7 +351,24 @@ export const servicePages: readonly ServicePageData[] = [
     relatedLinks: [
       { label: "Backend development services", href: "/services/backend-development" },
       { label: "SaaS development", href: "/services/saas-development" },
-      { label: "Contact Hylith", href: "/contact" },
+      { label: "Book a discovery call", href: discoveryMeetingHref },
+    ],
+    faqItems: [
+      {
+        question: "What does API development include?",
+        answer:
+          "API development usually includes endpoint design, validation, authentication, documentation, and versioning. The goal is a reliable API that is easy for apps and integrations to consume.",
+      },
+      {
+        question: "How do you make APIs secure and reliable?",
+        answer:
+          "We use clear auth rules, structured error handling, and predictable response formats so the API stays safe and easier to debug. Reliability improves when contracts stay consistent over time.",
+      },
+      {
+        question: "Can you build APIs for internal tools and external integrations?",
+        answer:
+          "Yes. We build APIs that support internal dashboards, automation, mobile apps, and third-party integrations without turning the contract into a maintenance burden.",
+      },
     ],
     ctaLabel: "Discuss API development",
   },

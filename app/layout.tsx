@@ -3,11 +3,7 @@ import localFont from "next/font/local";
 import Script from "next/script";
 import { ogImageMetadata, ogImageUrl, siteConfig } from "./site-config";
 import "./globals.css";
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils"; 
-import { AuthSessionProvider } from "@/components/providers/session-provider";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+import { cn } from "@/lib/utils";
 
 const dmSans = localFont({
   src: "../public/fonts/dm-sans.woff2",
@@ -81,7 +77,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("font-sans", geist.variable, dmSans.variable)}
+      className={cn("font-sans", dmSans.variable)}
+      style={{ ["--font-sans" as string]: "var(--font-dm-sans)" }}
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-[#EEEEE8] antialiased" suppressHydrationWarning>
@@ -93,15 +90,15 @@ export default function RootLayout({
         </a>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-4FPL6SNFRP"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-4FPL6SNFRP');`}
         </Script>
-        <AuthSessionProvider>{children}</AuthSessionProvider>
+        {children}
       </body>
     </html>
   );

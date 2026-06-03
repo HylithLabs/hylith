@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { WordRotate } from "@/components/ui/word-rotate";
 import { ArrowRight, Globe, Link2, MessageCircleMore } from "lucide-react";
+import { discoveryMeetingHref } from "@/app/site-config";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -216,12 +217,14 @@ const Fifth = () => {
                       <Icon className="size-[0.92rem]" strokeWidth={1.7} />
                     </a>
                   ))}
-                  <a
-                    className="break-all text-[0.76rem] tracking-[0.02em] text-[#EFEFED]/58 md:ml-3"
-                    href="mailto:hello@hylith.com"
+                  <Link
+                    className="group ml-0 inline-flex items-center gap-2 text-[0.76rem] tracking-[0.02em] text-[#EFEFED]/58 transition hover:text-[#EFEFED] md:ml-3"
+                    href={discoveryMeetingHref}
                   >
-                    hello@hylith.com
-                  </a>
+                    <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_0_rgba(52,211,153,0.45)] animate-pulse" />
+                    <span>Book a discovery call</span>
+                    <ArrowRight className="size-3 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </Link>
                 </div>
 
                 <div className="text-[0.72rem] tracking-[0.02em] text-[#EFEFED]/52">

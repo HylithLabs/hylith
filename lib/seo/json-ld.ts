@@ -1,4 +1,5 @@
 import { absoluteUrl, ogImageUrl, siteConfig, siteContact, siteServices } from "@/app/site-config";
+import type { FAQItem } from "@/lib/seo/content";
 
 /** JSON-LD for the marketing homepage — keep in sync with visible on-page copy. */
 export function homePageJsonLd() {
@@ -76,4 +77,19 @@ export function homePageJsonLd() {
 
 export function serializeJsonLd(data: unknown) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
+export function faqPageJsonLd(items: readonly FAQItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
 }

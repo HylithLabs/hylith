@@ -1,12 +1,10 @@
-"use client";
-
 import Navbar from "@/components/Navbar";
 import SmoothScrollBoundary from "@/components/SmoothScrollBoundary";
 import HeroSection from "@/pages/HeroSection";
-import Second from "@/pages/Second";
-import Third from "@/pages/Third";
-import Forth from "@/pages/Forth";
-import Fifth from "@/pages/Fifth";
+import DeferredSecond from "@/components/deferred-second";
+import DeferredThird from "@/components/deferred-third";
+import DeferredForth from "@/components/deferred-forth";
+import DeferredFifth from "@/components/deferred-fifth";
 
 export default function HomePage() {
   return (
@@ -15,10 +13,10 @@ export default function HomePage() {
       <main id="main-content">
         <Navbar />
         <HeroSection />
-        <Second />
-        <Third />
-        <Forth />
-        <Fifth />
+        <DeferredSecond />
+        <DeferredThird />
+        <DeferredForth />
+        <DeferredFifth />
       </main>
     </>
   );
