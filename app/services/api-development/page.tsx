@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import MarketingPage from "@/components/seo/MarketingPage";
-import { discoveryMeetingHref } from "@/app/site-config";
 import { getServicePage } from "@/lib/seo/content";
+import { serializeJsonLd, servicePageJsonLd } from "@/lib/seo/json-ld";
 import { marketingPageMetadata } from "@/lib/seo/metadata";
 
 const page = getServicePage("api-development")!;
@@ -15,17 +15,25 @@ export const metadata: Metadata = marketingPageMetadata({
 
 export default function ApiDevelopmentPage() {
   return (
-    <MarketingPage
-      eyebrow="Services"
-      title={page.title}
-      intro={page.intro}
-      keywordFocus={page.keywordFocus}
-      sections={page.sections}
-      relatedLinks={page.relatedLinks}
-      faqItems={page.faqItems}
-      ctaLabel={page.ctaLabel}
-      ctaHref={discoveryMeetingHref}
-      footerNote="An API is easiest to trust when its shape is predictable enough for both internal teams and external systems to rely on it."
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(servicePageJsonLd(page)),
+        }}
+      />
+      <MarketingPage
+        eyebrow="Services"
+        title={page.title}
+        intro={page.intro}
+        keywordFocus={page.keywordFocus}
+        sections={page.sections}
+        relatedLinks={page.relatedLinks}
+        faqItems={page.faqItems}
+        ctaLabel={page.ctaLabel}
+        ctaHref="/contact"
+        footerNote="An API is easiest to trust when its shape is predictable enough for both internal teams and external systems to rely on it."
+      />
+    </>
   );
 }

@@ -1,5 +1,11 @@
-import { absoluteUrl, ogImageUrl, siteConfig, siteContact, siteServices } from "@/app/site-config";
-import type { FAQItem } from "@/lib/seo/content";
+import {
+  absoluteUrl,
+  ogImageUrl,
+  siteConfig,
+  siteContact,
+  siteServices,
+} from "@/app/site-config";
+import type { BlogPostData, FAQItem, ServicePageData } from "@/lib/seo/content";
 
 /** JSON-LD for the marketing homepage — keep in sync with visible on-page copy. */
 export function homePageJsonLd() {
@@ -44,6 +50,7 @@ export function homePageJsonLd() {
               "@type": "Service",
               name: service.name,
               description: service.description,
+              url: absoluteUrl(service.href),
               provider: { "@id": businessId },
             },
           })),
@@ -72,6 +79,50 @@ export function homePageJsonLd() {
         },
       },
     ],
+  };
+}
+
+export function servicePageJsonLd(page: ServicePageData) {
+  const pageUrl = absoluteUrl(`/services/${page.slug}`);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: page.schemaName,
+    description: page.description,
+    provider: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    areaServed: siteConfig.areaServed,
+    serviceType: page.schemaName,
+    url: pageUrl,
+    image: ogImageUrl(),
+  };
+}
+
+export function blogPostJsonLd(post: BlogPostData) {
+  const pageUrl = absoluteUrl(`/blog/${post.slug}`);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    articleSection: "Blog",
+    mainEntityOfPage: pageUrl,
+    url: pageUrl,
+    image: ogImageUrl(),
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("/assets/logo.svg"),
+      },
+    },
   };
 }
 

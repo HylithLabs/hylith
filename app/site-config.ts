@@ -6,7 +6,7 @@ export const siteConfig = {
   name: "Hylith",
   legalName: "Hylith",
   url: process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || defaultSiteUrl,
-  title: "Hylith | Custom Software & Web App Development Agency",
+  title: "Hylith | Custom Software & Web Application Development Agency",
   description:
     "Hylith builds custom web applications, SaaS platforms, MVPs, and scalable backend systems for startups and businesses.",
   ogDescription:
@@ -31,24 +31,34 @@ export const discoveryMeetingHref = "/signup?callbackUrl=/dashboard/schedule" as
 
 export const siteServices = [
   {
-    name: "Web application development",
+    name: "Web Application Development",
+    href: "/services/web-app-development",
     description:
       "Planning and building fast, scalable web apps with clean architecture, strong UX, and production-ready deployment.",
   },
   {
-    name: "Custom software development",
+    name: "SaaS Development",
+    href: "/services/saas-development",
     description:
-      "Tailored software systems for internal tools, customer portals, and operational workflows that need to fit the business precisely.",
+      "Startup-ready SaaS platforms with authentication, onboarding, subscriptions, and room to grow after launch.",
   },
   {
-    name: "SaaS and MVP development",
+    name: "MVP Development",
+    href: "/services/mvp-development",
     description:
-      "Startup-focused product builds that help founders validate quickly, launch faster, and evolve the platform without rework.",
+      "Focused MVP builds that help founders validate product direction quickly without overbuilding the first version.",
   },
   {
-    name: "Backend and API development",
+    name: "Backend Engineering",
+    href: "/services/backend-development",
     description:
-      "Scalable backend services and APIs with reliable data flows, integration points, and long-term maintainability.",
+      "Scalable backend systems with clear data flow, maintainable services, and strong foundations for growth.",
+  },
+  {
+    name: "API Development",
+    href: "/services/api-development",
+    description:
+      "Reliable APIs for product integrations, platform extensions, and internal automation across connected systems.",
   },
 ] as const;
 

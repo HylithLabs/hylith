@@ -1,5 +1,3 @@
-import { discoveryMeetingHref } from "@/app/site-config";
-
 export type SeoSection = {
   heading: string;
   paragraphs: readonly string[];
@@ -19,6 +17,7 @@ export type ServicePageData = {
   slug: string;
   title: string;
   seoTitle: string;
+  schemaName: string;
   description: string;
   keywordFocus: string;
   intro: string;
@@ -52,6 +51,7 @@ export const servicePages: readonly ServicePageData[] = [
     slug: "web-app-development",
     title: "Web Application Development Agency",
     seoTitle: "Web Application Development Agency for Startups",
+    schemaName: "Web Application Development",
     description:
       "Hylith designs and ships web applications that stay fast, maintainable, and ready for growth from the first release onward.",
     keywordFocus: "web application development agency",
@@ -64,14 +64,20 @@ export const servicePages: readonly ServicePageData[] = [
     ],
     sections: [
       {
-        heading: "Built for launch speed and long-term change",
+        heading: "What we do",
         paragraphs: [
           "A web application has to move from concept to production without turning into a maintenance trap. We shape the architecture, frontend structure, and backend boundaries together so the product can grow in small, predictable steps.",
           "That keeps the codebase approachable for startup teams while still supporting performance, accessibility, and search visibility.",
         ],
       },
       {
-        heading: "A full stack process for product teams",
+        heading: "Technologies used",
+        paragraphs: [
+          "We usually work with Next.js, React, TypeScript, and Node.js when that stack fits the product. For data-heavy applications, we pair that with a pragmatic database layer and clean API design so the app stays fast and maintainable.",
+        ],
+      },
+      {
+        heading: "Process",
         paragraphs: [
           "We plan around real workflows, real users, and real delivery constraints. That means the same team can handle the interface, the APIs, and the deployment path without handoff friction.",
           "For startups, that usually means fewer coordination delays and a clearer path from wireframe to working software.",
@@ -79,9 +85,9 @@ export const servicePages: readonly ServicePageData[] = [
       },
     ],
     relatedLinks: [
+      { label: "Contact Hylith", href: "/contact" },
       { label: "Custom software development", href: "/services/custom-software-development" },
       { label: "SaaS development", href: "/services/saas-development" },
-      { label: "Book a discovery call", href: discoveryMeetingHref },
     ],
     faqItems: [
       {
@@ -106,6 +112,7 @@ export const servicePages: readonly ServicePageData[] = [
     slug: "custom-software-development",
     title: "Custom Software Development Company",
     seoTitle: "Custom Software Development Company for Growing Teams",
+    schemaName: "Custom Software Development",
     description:
       "We design custom software systems for teams that need a better fit than off the shelf tools can provide.",
     keywordFocus: "custom software development company",
@@ -118,14 +125,20 @@ export const servicePages: readonly ServicePageData[] = [
     ],
     sections: [
       {
-        heading: "Software that matches the way the business works",
+        heading: "What we do",
         paragraphs: [
           "Generic tools often force teams to change their process to fit the product. Custom software lets the process stay intact while the implementation does the heavy lifting behind the scenes.",
           "That is useful when the workflows are complex, the data is sensitive, or the team needs a reliable internal platform that grows with the company.",
         ],
       },
       {
-        heading: "Designed for handoff and future expansion",
+        heading: "Technologies used",
+        paragraphs: [
+          "We choose the stack around the workflow, but the implementation often centers on Next.js, TypeScript, Node.js, and a relational database. That makes it easier to support internal tools, client portals, and operational systems with clear boundaries.",
+        ],
+      },
+      {
+        heading: "Process",
         paragraphs: [
           "We document the structure clearly and keep the codebase modular so future additions stay manageable. That helps internal teams inherit the project without a painful rewrite cycle.",
           "The result is software that remains practical after launch, not just polished at launch.",
@@ -133,9 +146,9 @@ export const servicePages: readonly ServicePageData[] = [
       },
     ],
     relatedLinks: [
+      { label: "Contact Hylith", href: "/contact" },
       { label: "Backend development services", href: "/services/backend-development" },
       { label: "API development company", href: "/services/api-development" },
-      { label: "Book a discovery call", href: discoveryMeetingHref },
     ],
     faqItems: [
       {
@@ -160,6 +173,7 @@ export const servicePages: readonly ServicePageData[] = [
     slug: "saas-development",
     title: "SaaS Development Company",
     seoTitle: "SaaS Development Company for Startup Products",
+    schemaName: "SaaS Development",
     description:
       "Hylith helps startups plan, build, and launch SaaS products with a stack and delivery process that can support growth.",
     keywordFocus: "SaaS development company",
@@ -172,14 +186,20 @@ export const servicePages: readonly ServicePageData[] = [
     ],
     sections: [
       {
-        heading: "Start small, but with the right foundations",
+        heading: "What we do",
         paragraphs: [
           "A startup SaaS product needs a clear first version, but that version still has to support authentication, data modeling, billing paths, and future feature growth.",
           "We design the product around those constraints so the launch version can mature without being rebuilt from scratch.",
         ],
       },
       {
-        heading: "Full stack delivery for founder-led teams",
+        heading: "Technologies used",
+        paragraphs: [
+          "For SaaS builds we often use Next.js, React, TypeScript, and Node.js with a database and auth layer that can support subscriptions, role management, and integrations without creating unnecessary complexity.",
+        ],
+      },
+      {
+        heading: "Process",
         paragraphs: [
           "We keep the delivery path tight so founders can move from idea to live product with one team across frontend, backend, and deployment. That keeps the feedback loop short and the launch plan realistic.",
           "It also makes it easier to stay focused on adoption, retention, and iteration once the first customers arrive.",
@@ -187,9 +207,9 @@ export const servicePages: readonly ServicePageData[] = [
       },
     ],
     relatedLinks: [
+      { label: "Contact Hylith", href: "/contact" },
       { label: "MVP development services", href: "/services/mvp-development" },
       { label: "Backend development services", href: "/services/backend-development" },
-      { label: "Book a discovery call", href: discoveryMeetingHref },
     ],
     faqItems: [
       {
@@ -214,6 +234,7 @@ export const servicePages: readonly ServicePageData[] = [
     slug: "mvp-development",
     title: "MVP Development Services",
     seoTitle: "MVP Development Services for Startups",
+    schemaName: "MVP Development",
     description:
       "We help founders turn an idea into a focused MVP that proves the product direction without adding unnecessary build time.",
     keywordFocus: "MVP development services",
@@ -226,14 +247,20 @@ export const servicePages: readonly ServicePageData[] = [
     ],
     sections: [
       {
-        heading: "Focus the roadmap on learning",
+        heading: "What we do",
         paragraphs: [
           "MVP work is at its best when the product exposes the core promise clearly and leaves everything else for later. We help teams define that boundary so the first release stays practical and measurable.",
           "That usually means fewer features, clearer flows, and a stronger sense of what to build next.",
         ],
       },
       {
-        heading: "Built to evolve after launch",
+        heading: "Technologies used",
+        paragraphs: [
+          "We typically choose a modern full stack setup built around Next.js, React, TypeScript, and Node.js so the MVP can move quickly while still leaving room for the second version of the product.",
+        ],
+      },
+      {
+        heading: "Process",
         paragraphs: [
           "Even early products should be set up so they can grow into a real platform. We keep the structure clean and the interfaces stable so new experiments do not turn the codebase into a dead end.",
           "That balance matters when the MVP turns into a funded product and the team needs to scale quickly.",
@@ -241,9 +268,9 @@ export const servicePages: readonly ServicePageData[] = [
       },
     ],
     relatedLinks: [
+      { label: "Contact Hylith", href: "/contact" },
       { label: "SaaS development", href: "/services/saas-development" },
       { label: "Web application development", href: "/services/web-app-development" },
-      { label: "Book a discovery call", href: discoveryMeetingHref },
     ],
     faqItems: [
       {
@@ -268,6 +295,7 @@ export const servicePages: readonly ServicePageData[] = [
     slug: "backend-development",
     title: "Backend Development Services",
     seoTitle: "Backend Development Services for Scalable Products",
+    schemaName: "Backend Engineering",
     description:
       "Hylith builds backend systems that keep data reliable, APIs clean, and product teams ready for scale.",
     keywordFocus: "backend development services",
@@ -280,14 +308,20 @@ export const servicePages: readonly ServicePageData[] = [
     ],
     sections: [
       {
-        heading: "Clear data flow and maintainable services",
+        heading: "What we do",
         paragraphs: [
           "A good backend does not just work today. It stays understandable as the product grows, which means service boundaries, data access patterns, and integration paths need to be deliberate from the start.",
           "We keep those pieces readable so future work does not depend on guesswork or brittle shortcuts.",
         ],
       },
       {
-        heading: "The foundation for product growth",
+        heading: "Technologies used",
+        paragraphs: [
+          "Backend work often centers on Node.js, TypeScript, and a relational database, with optional services for queues, caching, or third-party integrations depending on the product shape and expected traffic.",
+        ],
+      },
+      {
+        heading: "Process",
         paragraphs: [
           "When the backend is organized well, the rest of the product becomes easier to ship. New features, admin tools, and external integrations can land with less risk and less friction.",
           "That is especially valuable for startups that expect the platform to evolve quickly after launch.",
@@ -295,9 +329,9 @@ export const servicePages: readonly ServicePageData[] = [
       },
     ],
     relatedLinks: [
+      { label: "Contact Hylith", href: "/contact" },
       { label: "API development", href: "/services/api-development" },
       { label: "Custom software development", href: "/services/custom-software-development" },
-      { label: "Book a discovery call", href: discoveryMeetingHref },
     ],
     faqItems: [
       {
@@ -322,6 +356,7 @@ export const servicePages: readonly ServicePageData[] = [
     slug: "api-development",
     title: "API Development Company",
     seoTitle: "API Development Company for Connected Products",
+    schemaName: "API Development",
     description:
       "We build APIs that make integrations safer, product data easier to move, and future extensions easier to ship.",
     keywordFocus: "API development company",
@@ -334,14 +369,20 @@ export const servicePages: readonly ServicePageData[] = [
     ],
     sections: [
       {
-        heading: "Structured for reliability",
+        heading: "What we do",
         paragraphs: [
           "An API needs clear contracts, predictable responses, and enough structure to support both frontend clients and third-party systems. That reduces integration risk and helps teams move faster with less rework.",
           "We keep versioning and documentation practical so the API can stay useful once real users depend on it.",
         ],
       },
       {
-        heading: "Designed for product and platform use",
+        heading: "Technologies used",
+        paragraphs: [
+          "We usually build APIs with Node.js, TypeScript, and a database-backed service layer, then add authentication, validation, and versioning rules that keep the interface predictable over time.",
+        ],
+      },
+      {
+        heading: "Process",
         paragraphs: [
           "Whether the API supports a web app, a mobile app, or an internal automation layer, the goal is the same: make the software easier to extend without compromising stability.",
           "That makes the API a product asset instead of a maintenance burden.",
@@ -349,9 +390,9 @@ export const servicePages: readonly ServicePageData[] = [
       },
     ],
     relatedLinks: [
+      { label: "Contact Hylith", href: "/contact" },
       { label: "Backend development services", href: "/services/backend-development" },
       { label: "SaaS development", href: "/services/saas-development" },
-      { label: "Book a discovery call", href: discoveryMeetingHref },
     ],
     faqItems: [
       {
