@@ -4,8 +4,11 @@ import { ogImageMetadata, ogImageUrl, siteConfig } from "./site-config";
 import { homePageJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: siteConfig.title,
+  title: {
+    absolute: siteConfig.title,
+  },
   description: siteConfig.description,
+  keywords: [...siteConfig.keywords],
   alternates: {
     canonical: "/",
   },
@@ -14,6 +17,9 @@ export const metadata: Metadata = {
     description: siteConfig.ogDescription,
     url: siteConfig.url,
     images: [ogImageMetadata],
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",

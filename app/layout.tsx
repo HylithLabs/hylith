@@ -34,9 +34,6 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  alternates: {
-    canonical: "/",
-  },
   category: "technology",
   ...(googleSiteVerification
     ? { verification: { google: googleSiteVerification } }

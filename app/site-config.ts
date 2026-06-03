@@ -1,14 +1,16 @@
+import { allSeoKeywords } from "@/lib/seoKeywords";
+
 const defaultSiteUrl = "https://hylith.com";
 
 export const siteConfig = {
   name: "Hylith",
   legalName: "Hylith",
   url: process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || defaultSiteUrl,
-  title: "Hylith | Modern By Design, Trusted By Purpose",
+  title: "Hylith | Custom Software & Web App Development Agency",
   description:
-    "Hylith designs and builds full-stack systems where logic and interface work as one.",
+    "Hylith builds custom web applications, SaaS platforms, MVPs, and scalable backend systems for startups and businesses.",
   ogDescription:
-    "Modern product, engineering, and full-stack system design for ambitious businesses.",
+    "Custom software, web apps, SaaS, MVPs, backend systems, and API development for ambitious startups and growing teams.",
   areaServed: "Worldwide",
   sameAs: ["https://hylith.com"] as const,
   /**
@@ -18,34 +20,33 @@ export const siteConfig = {
   ogImagePath: "/assets/OGImage.png",
   ogImageVersion: "2",
   locale: "en_US",
-  keywords: [
-    "Hylith",
-    "hylith",
-    "full-stack systems",
-    "product engineering",
-    "web development agency",
-    "modern web development agency",
-    "software design",
-    "system design",
-    "UI engineering",
-  ],
+  keywords: allSeoKeywords,
 } as const;
 
 export const siteContact = {
   email: "hello@hylith.com",
 } as const;
 
-/** Primary services — aligned with on-page copy in `pages/Forth.tsx`. */
 export const siteServices = [
   {
-    name: "End-to-end product execution",
+    name: "Web application development",
     description:
-      "From the first idea to a live product — strategy, design, development, and launch as one seamless process with zero handoff friction.",
+      "Planning and building fast, scalable web apps with clean architecture, strong UX, and production-ready deployment.",
   },
   {
-    name: "Web development",
+    name: "Custom software development",
     description:
-      "Designs turned into fast, accessible digital products with clean code, modern stack, performance tuning, and SEO fundamentals.",
+      "Tailored software systems for internal tools, customer portals, and operational workflows that need to fit the business precisely.",
+  },
+  {
+    name: "SaaS and MVP development",
+    description:
+      "Startup-focused product builds that help founders validate quickly, launch faster, and evolve the platform without rework.",
+  },
+  {
+    name: "Backend and API development",
+    description:
+      "Scalable backend services and APIs with reliable data flows, integration points, and long-term maintainability.",
   },
 ] as const;
 
@@ -58,7 +59,6 @@ export function ogImageUrl() {
   return absoluteUrl(path);
 }
 
-/** Shared OG/Twitter image object — use in layout AND page metadata (page overrides layout). */
 export const ogImageMetadata = {
   url: ogImageUrl(),
   width: 1200,
