@@ -59,6 +59,7 @@ export default async function Navbar() {
       <Link href="/" aria-label="Hylith home">
         <Image
           className="h-auto w-[105px] sm:w-[118px] xl:w-[125px]"
+          style={{ height: "auto" }}
           src="/assets/logo.svg"
           alt="Hylith"
           width={125}

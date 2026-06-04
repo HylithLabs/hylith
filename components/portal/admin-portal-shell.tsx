@@ -15,6 +15,7 @@ export function AdminPortalShell({ children }: { children: ReactNode }) {
               width={80}
               height={20}
               className="sm:hidden md:block lg:block xl:block"
+              style={{ height: "auto" }}
               priority
             />
             <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">

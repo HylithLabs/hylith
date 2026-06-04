@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { PortalShell } from "@/components/portal/portal-shell";
 import { privateRouteMetadata } from "@/lib/seo/metadata";
 
@@ -10,6 +11,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <PortalShell showNav>{children}</PortalShell>
+    <AuthSessionProvider>
+      <PortalShell showNav>{children}</PortalShell>
+    </AuthSessionProvider>
   );
 }

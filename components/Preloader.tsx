@@ -54,6 +54,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
           height={40}
           priority
           className="h-auto w-[105px] sm:w-[118px] xl:w-[125px]"
+          style={{ height: "auto" }}
         />
       </div>
     </div>

@@ -199,6 +199,7 @@ const Fifth = () => {
                   height={54}
                   priority={false}
                   src="/assets/logo.svg"
+                  style={{ height: "auto" }}
                   width={156}
                 />
               </div>

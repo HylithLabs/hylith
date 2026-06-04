@@ -22,6 +22,7 @@ export function PortalShell({
                 width={80}
                 height={20}
                 className="sm:hidden md:block lg:block xl:block"
+                style={{ height: "auto" }}
                 priority
               />
             </Link>
