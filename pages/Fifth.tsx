@@ -12,6 +12,8 @@ import { discoveryMeetingHref } from "@/app/site-config";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+const WHATSAPP_HREF = "https://wa.me/8801737488641";
+
 const WHAT_WE_DO = [
   "World-Class Digital",
   "Collaborate Success",
@@ -45,10 +47,10 @@ const WHAT_WE_DONT = [
 
 const SOCIALS = [
   { label: "Website", href: "https://hylith.com", icon: Globe },
-  { label: "Behance", href: "https://www.behance.net", icon: Link2 },
+  { label: "Connect on WhatsApp", href: WHATSAPP_HREF, icon: Link2 },
   {
-    label: "Contact",
-    href: "https://www.linkedin.com",
+    label: "Chat on WhatsApp",
+    href: WHATSAPP_HREF,
     icon: MessageCircleMore,
   },
 ];
