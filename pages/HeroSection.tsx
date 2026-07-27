@@ -2,6 +2,9 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { discoveryMeetingHref } from "@/app/site-config";
+import { IntroFadeIn, IntroFromBottom } from "@/components/IntroReveal";
+import MaskRevealUp from "@/components/smoothui/mask-reveal-up";
+import RotatingText from "@/components/RotatingText";
 
 const glassBadgeStyle = {
   letterSpacing: "0",
@@ -88,15 +91,17 @@ function DiscussCta({ className = "" }: { className?: string }) {
     <Link
       href={discoveryMeetingHref}
       className={[
-        "hero-badge group z-50 inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-semibold leading-none sm:h-13 lg:h-11 lg:w-auto lg:max-w-none lg:px-5 lg:text-sm lg:whitespace-nowrap xl:h-16 xl:px-10 xl:text-[1.09rem]",
+        "hero-badge group z-50 group inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-semibold leading-none sm:h-13 lg:h-11 lg:w-auto lg:max-w-none lg:px-5 lg:text-sm lg:whitespace-nowrap xl:h-16 xl:px-10 xl:text-[1.09rem]",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
       style={glassBadgeStyle}
     >
-      <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_0_0_rgba(16,185,129,0.55)] animate-pulse" />
-      Discuss Your System
+      <span className="size-2 group-hover:h-10 group-hover:w-2  transition-all duration-300 rounded-full bg-emerald-500 shadow-[0_0_0_0_rgba(16,185,129,0.55)]  ease-[cubic-bezier(0.87,0,0.13,1)]" />
+      <RotatingText>
+        {"Discuss Your System"}
+      </RotatingText>
     </Link>
   );
 }
@@ -109,23 +114,29 @@ const HeroSection = () => {
     >
       <div className="mt-5 sm:mt-10 lg:mt-20 xl:mt-24">
         <h1 className="text-left text-[clamp(2.35rem,10.5vw,3.5rem)] leading-[0.94] font-medium uppercase tracking-[-0.03em] sm:text-[clamp(2.75rem,11vw,4rem)] lg:text-center lg:text-[6.8rem] lg:normal-case xl:text-9xl xl:leading-none">
-          <RevealClip>
-            <span className="block lg:mr-24 xl:mr-72">WE COMPLETE</span>
-          </RevealClip>
+           
+            <MaskRevealUp waitForIntro className="block lg:mr-24 xl:mr-72">
+              {"WE COMPLETE"}
+            </MaskRevealUp>
+
           <RevealClip className="mt-1.5 sm:mt-2 lg:hidden">
-            <span className="block tracking-[-0.05em] leading-none">
-              YOUR BUSINESS
-            </span>
+            <MaskRevealUp waitForIntro className="block tracking-[-0.05em] leading-none">
+              {"YOUR BUSINESS"}
+            </MaskRevealUp>
           </RevealClip>
           <div className="hidden w-full lg:block">
             <div className="mx-auto w-fit flex  items-center justify-center gap-4">
-              <span className="inline-flex">
+              <IntroFadeIn className="inline-flex" delay={0.2}>
                 <DiscussCta />
-              </span>
+              </IntroFadeIn>
               <RevealClip className="flex items-center">
-                <span className="tracking-[-0.05em] leading-none">
-                  YOUR BUSINESS
-                </span>
+                <MaskRevealUp
+                  waitForIntro
+                  delay={300}
+                  className="tracking-[-0.05em] leading-none"
+                >
+                  {"YOUR BUSINESS"}
+                </MaskRevealUp>
               </RevealClip>
             </div>
           </div>
@@ -134,23 +145,33 @@ const HeroSection = () => {
 
       <div className="hero-mobile-copy mt-5 sm:mt-7 lg:mx-auto lg:mt-0 lg:max-w-none lg:pb-20">
         <RevealClip>
-          <p className="text-left text-[0.9375rem] leading-[1.35] font-medium tracking-[-0.03em] text-[#666666] sm:text-lg lg:ml-40 lg:text-center lg:text-2xl lg:leading-snug lg:tracking-[-0.05em] xl:ml-96 xl:text-3xl">
-            We design and build full-stack systems
-          </p>
+          <MaskRevealUp
+            waitForIntro
+            delay={500}
+            className="text-left text-[0.9375rem] leading-[1.35] font-medium tracking-[-0.03em] text-[#666666] sm:text-lg lg:ml-40 lg:text-center lg:text-2xl lg:leading-snug lg:tracking-[-0.05em] xl:ml-96 xl:text-3xl"
+          >
+            {"We design and build full-stack systems"}
+          </MaskRevealUp>
         </RevealClip>
 
         <RevealClip className="mt-1 lg:mt-0">
-          <p className="text-left text-[0.9375rem] leading-[1.35] font-medium tracking-[-0.03em] text-[#666666] sm:text-lg lg:ml-40 lg:text-center lg:text-2xl lg:leading-snug lg:tracking-[-0.05em] xl:ml-96 xl:text-3xl">
-            where logic and interface work as one.
-          </p>
+          <MaskRevealUp
+            waitForIntro
+            delay={600}
+            className="text-left text-[0.9375rem] leading-[1.35] font-medium tracking-[-0.03em] text-[#666666] sm:text-lg lg:ml-40 lg:text-center lg:text-2xl lg:leading-snug lg:tracking-[-0.05em] xl:ml-96 xl:text-3xl"
+          >
+            {"where logic and interface work as one."}
+          </MaskRevealUp>
         </RevealClip>
       </div>
 
       <div className="mt-5 w-full sm:mt-6 lg:hidden">
-        <DiscussCta />
+        <IntroFadeIn delay={0.35}>
+          <DiscussCta />
+        </IntroFadeIn>
       </div>
 
-      <div className="hero-mobile-card relative mt-6 sm:mt-8 xl:hidden">
+      <IntroFromBottom className="hero-mobile-card relative mt-6 overflow-hidden sm:mt-8 xl:hidden">
         <div className="hero-mobile-card-inner relative overflow-hidden rounded-[1.125rem] bg-[#0F0B0A] px-4 pb-7 pt-6 shadow-[0_24px_48px_-28px_rgba(15,11,10,0.55)] sm:rounded-[1.5rem] sm:px-7 sm:pb-9 sm:pt-9">
           <div className="hero-collage-grid mx-auto">
             {HERO_TILES.map((tile, i) => (
@@ -271,7 +292,7 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </div>
+      </IntroFromBottom>
     </section>
   );
 };

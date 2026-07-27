@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { WordRotate } from "@/components/ui/word-rotate";
 import { ArrowRight, Globe, Link2, MessageCircleMore } from "lucide-react";
 import { discoveryMeetingHref } from "@/app/site-config";
+import RotatingText from "@/components/RotatingText";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -55,7 +56,6 @@ const SOCIALS = [
   },
 ];
 
-
 function ValueColumn({ items, title }: { items: string[]; title: string }) {
   const splitIndex = Math.ceil(items.length / 2);
   const firstGroup = items.slice(0, splitIndex);
@@ -67,12 +67,14 @@ function ValueColumn({ items, title }: { items: string[]; title: string }) {
         {title}
       </p>
 
-      <div className="mt-5 grid grid-cols-1 gap-x-6 gap-y-2 text-lg leading-6 font-medium tracking-[-0.03em] break-words text-[#0F0B0A]/58 sm:grid-cols-2 sm:text-xl md:gap-x-10">
-        <ul className="space-y-1">
-          {firstGroup.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
+      <div className="mt-5 grid grid-cols-1 gap-x-6 gap-y-2 text-lg leading-6 font-medium tracking-[-0.03em] wrap-break-word   text-[#0F0B0A]/58 sm:grid-cols-2 sm:text-xl md:gap-x-10">
+        <RotatingText>
+          <ul className="space-y-1">
+            {firstGroup.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </RotatingText>
 
         <ul className="space-y-1">
           {secondGroup.map((item) => (
@@ -115,15 +117,12 @@ const Fifth = () => {
         },
       });
 
-      timeline.to(
-        lineRef.current,
-        {
-          autoAlpha: 1,
-          duration: 0.65,
-          ease: "power3.out",
-          scaleX: 1,
-        }
-      );
+      timeline.to(lineRef.current, {
+        autoAlpha: 1,
+        duration: 0.65,
+        ease: "power3.out",
+        scaleX: 1,
+      });
 
       timeline.to(
         footerRef.current,
@@ -133,7 +132,7 @@ const Fifth = () => {
           ease: "power4.out",
           y: 0,
         },
-        "-=0.1"
+        "-=0.1",
       );
     },
     { scope: sectionRef },

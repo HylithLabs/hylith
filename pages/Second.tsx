@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
+import MaskRevealUp from "@/components/smoothui/mask-reveal-up";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -215,10 +216,14 @@ const Second = () => {
         });
 
         approach
-          .to(section, {
-            ...EXPANDED,
-            ease: "none",
-          }, 0)
+          .to(
+            section,
+            {
+              ...EXPANDED,
+              ease: "none",
+            },
+            0,
+          )
           .to(
             ".second-copy",
             { color: "#0F0B0A", ease: "none" },
@@ -229,7 +234,6 @@ const Second = () => {
             { borderColor: "#0F0B0A", ease: "none" },
             0,
           );
-
 
         const pinned = gsap.timeline({
           scrollTrigger: {
@@ -311,9 +315,15 @@ const Second = () => {
         {/* Right column — headline top-right, links bottom */}
         <div className="mt-14 flex min-w-0 flex-col justify-between gap-16 sm:mt-16 sm:gap-20 xl:mt-0 xl:min-h-[calc(100vh-9rem)] xl:gap-0">
           <div className="second-copy flex w-full flex-col items-end text-right leading-[0.88] font-black tracking-[-0.03em] uppercase xl:pt-10">
-            <h2 className="text-[clamp(2.35rem,5.4vw,5.75rem)]">Together,</h2>
-            <h2 className="text-[clamp(2.35rem,5.4vw,5.75rem)]">we create</h2>
-            <h2 className="text-[clamp(2.35rem,5.4vw,5.75rem)]">solutions</h2>
+            <MaskRevealUp className="text-[clamp(2.35rem,5.4vw,5.75rem)]">
+              {'Together,'}
+            </MaskRevealUp >
+            <MaskRevealUp className="text-[clamp(2.35rem,5.4vw,5.75rem)]">
+              {'we create'}
+            </MaskRevealUp>
+            <MaskRevealUp  className="text-[clamp(2.35rem,5.4vw,5.75rem)]">
+              {'solutions'}
+            </MaskRevealUp>
           </div>
 
           {/* Mobile links */}

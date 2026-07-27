@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import NavbarMenu from "@/components/NavbarMenu";
+import RotatingText from "./RotatingText";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -82,7 +83,9 @@ export default async function Navbar() {
             }
             href={link.href}
           >
-            {link.label}
+            <RotatingText >
+              {link.label}
+            </RotatingText>
           </Link>
         ))}
       </div>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import SmoothScrollBoundary from "@/components/SmoothScrollBoundary";
+import HomeIntro from "@/components/HomeIntro";
+import { IntroFromTop } from "@/components/IntroReveal";
 import HeroSection from "@/pages/HeroSection";
 import DeferredSecond from "@/components/deferred-second";
 import DeferredThird from "@/components/deferred-third";
@@ -10,10 +12,12 @@ import { siteServices } from "./site-config";
 
 export default function HomePage() {
   return (
-    <>
-        <SmoothScrollBoundary />
-        <main id="main-content">
-        <Navbar />
+    <HomeIntro>
+      <SmoothScrollBoundary />
+      <main id="main-content">
+        <IntroFromTop className="relative z-50">
+          <Navbar />
+        </IntroFromTop>
         <HeroSection />
         <section className="hidden" aria-hidden="true">
           <h2>What Hylith does</h2>
@@ -39,6 +43,6 @@ export default function HomePage() {
         <DeferredForth />
         <DeferredFifth />
       </main>
-    </>
+    </HomeIntro>
   );
 }
