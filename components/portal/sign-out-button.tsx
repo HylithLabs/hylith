@@ -2,6 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { markSkipHomeIntro } from "@/lib/home-intro";
 
 export function SignOutButton() {
   return (
@@ -10,7 +11,10 @@ export function SignOutButton() {
       variant="outline"
       size="sm"
       className="rounded-full"
-      onClick={() => signOut({ callbackUrl: "/" })}
+      onClick={() => {
+        markSkipHomeIntro();
+        void signOut({ callbackUrl: "/" });
+      }}
     >
       Sign out
     </Button>
