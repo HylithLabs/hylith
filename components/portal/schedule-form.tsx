@@ -29,15 +29,6 @@ const SERVICES = [
   "Consulting",
 ] as const;
 
-const BUDGETS = [
-  "Less than $5k",
-  "$5k – $15k",
-  "$15k – $50k",
-  "$50k – $100k",
-  "$100k+",
-  "Not sure yet",
-];
-
 const PROJECT_STATUSES = [
   "Just an idea",
   "Have wireframes / mockups",
@@ -164,11 +155,8 @@ function BookingFormPanel({
   const [name, setName] = useState(prefillName);
   const [email, setEmail] = useState(prefillEmail);
   const [company, setCompany] = useState("");
-  const [companyUrl, setCompanyUrl] = useState("");
   const [services, setServices] = useState<string[]>([]);
-  const [budget, setBudget] = useState("");
   const [projectStatus, setProjectStatus] = useState("");
-  const [deadline, setDeadline] = useState("");
   const [description, setDescription] = useState("");
   const [guests, setGuests] = useState<string[]>([]);
   const [guestInput, setGuestInput] = useState("");
@@ -194,11 +182,8 @@ function BookingFormPanel({
     if (!name.trim()) { setError("Name is required"); return; }
     if (!email.trim()) { setError("Email is required"); return; }
     if (!company.trim()) { setError("Company name is required"); return; }
-    if (!companyUrl.trim()) { setError("Company URL is required"); return; }
     if (services.length === 0) { setError("Select at least one service"); return; }
-    if (!budget) { setError("Budget is required"); return; }
     if (!projectStatus) { setError("Project status is required"); return; }
-    if (!deadline.trim()) { setError("Deadline is required"); return; }
     if (description.trim().length < 10) { setError("Project description is too short"); return; }
 
     setError(null);
@@ -211,11 +196,8 @@ function BookingFormPanel({
         startAt: selectedSlotIso,
         name: name.trim(),
         company: company.trim(),
-        companyUrl: companyUrl.trim(),
         services,
-        budget,
         projectStatus,
-        deadline: deadline.trim(),
         projectDescription: description.trim(),
         guests,
       }),
@@ -278,17 +260,6 @@ function BookingFormPanel({
           />
         </Field>
 
-        {/* Company URL */}
-        <Field label="Company URL" required>
-          <input
-            type="url"
-            className={calInput}
-            value={companyUrl}
-            onChange={(e) => setCompanyUrl(e.target.value)}
-            placeholder="https://acme.com"
-          />
-        </Field>
-
         {/* Services */}
         <Field label="What Services Do You Need?" required>
           <div className="flex flex-wrap gap-1.5 pt-0.5">
@@ -305,21 +276,6 @@ function BookingFormPanel({
           </div>
         </Field>
 
-        {/* Budget */}
-        <Field label="Our Budget is" required>
-          <div className="relative">
-            <select
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              className={calSelect}
-            >
-              <option value="" disabled>Select a range…</option>
-              {BUDGETS.map((b) => <option key={b} value={b}>{b}</option>)}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
-        </Field>
-
         {/* Project status */}
         <Field label="What Is Your Project Status?" required>
           <div className="relative">
@@ -333,16 +289,6 @@ function BookingFormPanel({
             </select>
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           </div>
-        </Field>
-
-        {/* Deadline */}
-        <Field label="Our Deadline Is:" required>
-          <input
-            className={calInput}
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-            placeholder="e.g. Q3 2025 or Sept 1, 2025"
-          />
         </Field>
 
         {/* Project description */}

@@ -18,11 +18,11 @@ const createSchema = z.object({
   startAt: z.string().datetime(),
   name: z.string().trim().min(1).max(200).optional(),
   company: z.string().trim().min(1, "Company is required").max(200),
-  companyUrl: z.string().trim().min(1, "Company URL is required").max(500),
+  companyUrl: z.string().trim().max(500).optional(),
   services: z.array(z.string()).min(1, "Select at least one service"),
-  budget: z.string().trim().min(1, "Budget is required").max(100),
+  budget: z.string().trim().max(100).optional(),
   projectStatus: z.string().trim().min(1, "Project status is required").max(100),
-  deadline: z.string().trim().min(1, "Deadline is required").max(200),
+  deadline: z.string().trim().max(200).optional(),
   projectDescription: z.string().trim().min(10).max(5000),
   guests: z.array(z.string().email()).default([]),
 });
@@ -104,11 +104,11 @@ export async function POST(request: Request) {
     // Serialize all form fields into project_summary as JSON
     const projectSummary = JSON.stringify({
       description: projectDescription,
-      companyUrl,
+      ...(companyUrl ? { companyUrl } : {}),
       services,
-      budget,
+      ...(budget ? { budget } : {}),
       projectStatus,
-      deadline,
+      ...(deadline ? { deadline } : {}),
       guests,
     });
 
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
       timezone,
       projectSummary,
       company,
-      phone: companyUrl, // store URL in phone column (nullable varchar)
+      phone: companyUrl ?? "", // optional company URL stored in phone column
     });
 
     let calendarResult: GoogleMeetCreationResult = {
